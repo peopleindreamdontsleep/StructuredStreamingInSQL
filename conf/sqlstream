@@ -1,0 +1,19 @@
+CREATE TABLE kafkaTable(
+    word string,
+    wordcount int
+)WITH(
+    type='kafka',
+    kafka.bootstrap.servers='dfttshowkafka001:9092',
+    process='2s',
+    subscribe='test',
+    group='test'
+);
+
+create SINK consoleOut(
+)WITH(
+    type='console',
+    outputmode='complete',
+    process='2s'
+);
+
+insert into consoleOut select word,count(wordcount) from kafkaTable group by word;

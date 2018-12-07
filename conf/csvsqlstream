@@ -1,0 +1,16 @@
+CREATE TABLE csvTable(
+    name string,
+    age int
+)WITH(
+    type='csv',
+    delimiter=';',
+    path='F:\E\wordspace\sqlstream\filepath'
+);
+
+create SINK console(
+)WITH(
+    type='console',
+    outputmode='complete',
+);
+
+insert into console select name,sum(age) from csvTable group by name;
