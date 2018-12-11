@@ -1,0 +1,17 @@
+CREATE TABLE SocketTable(
+    word String
+)WITH(
+    type='socket',
+    host='hadoop-sh1-core1',
+    processwindow='10 seconds,5 seconds',
+    watermark='10 seconds',
+    port='9998'
+);
+
+create SINK console(
+)WITH(
+    type='console',
+    outputmode='complete'
+);
+
+insert into console select processwindow,word,count(*) from SocketTable group by processwindow,word;
