@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
- 
 
 package com.openspark.sqlstream.util;
 
@@ -39,8 +38,8 @@ public class DateUtil {
     static final SimpleDateFormat timeFormatter = new SimpleDateFormat(timeFormat);
 
     public static java.sql.Date columnToDate(Object column) {
-        if(column instanceof String) {
-            return new java.sql.Date(stringToDate((String)column).getTime());
+        if (column instanceof String) {
+            return new java.sql.Date(stringToDate((String) column).getTime());
         } else if (column instanceof Integer) {
             Integer rawData = (Integer) column;
             return new java.sql.Date(rawData.longValue());
@@ -49,15 +48,15 @@ public class DateUtil {
             return new java.sql.Date(rawData.longValue());
         } else if (column instanceof java.sql.Date) {
             return (java.sql.Date) column;
-        } else if(column instanceof Timestamp) {
+        } else if (column instanceof Timestamp) {
             Timestamp ts = (Timestamp) column;
             return new java.sql.Date(ts.getTime());
         }
         throw new IllegalArgumentException("Can't convert " + column.getClass().getName() + " to Date");
     }
 
-    public static Date stringToDate(String strDate)  {
-        if(strDate == null){
+    public static Date stringToDate(String strDate) {
+        if (strDate == null) {
             return null;
         }
         try {
@@ -79,8 +78,6 @@ public class DateUtil {
     }
 
     /**
-     *
-     * 
      * @param day Long 时间
      * @return long
      */
@@ -101,23 +98,21 @@ public class DateUtil {
     }
 
     /**
-     *
-     * @param day Long 时间
+     * @param day   Long 时间
      * @param scope
      * @return
      */
-    public static long getTodayStart(long day,String scope) {
-    	if(scope.equals("MS")){
-    		return getTodayStart(day)*1000;
-    	}else if(scope.equals("S")){
-    		return getTodayStart(day);
-    	}else{
-    		return getTodayStart(day);
-    	}
+    public static long getTodayStart(long day, String scope) {
+        if (scope.equals("MS")) {
+            return getTodayStart(day) * 1000;
+        } else if (scope.equals("S")) {
+            return getTodayStart(day);
+        } else {
+            return getTodayStart(day);
+        }
     }
 
     /**
-     *
      * @param day Long 时间
      * @return long
      */
@@ -137,26 +132,24 @@ public class DateUtil {
         nextDay = (cal.getTimeInMillis() + daySpanMill) / 1000;
         return nextDay;
     }
-    
+
     /**
-     *
-     * @param day Long 时间
+     * @param day   Long 时间
      * @param scope String 级别<br>"MS"：毫秒级<br>"S":秒级
      * @return
      */
-    public static long getNextDayStart(long day,String scope) {
-    	if(scope.equals("MS")){
-    		return getNextDayStart(day)*1000;
-    	}else if(scope.equals("S")){
-    		return getNextDayStart(day);
-    	}else{
-    		return getNextDayStart(day);
-    	}
+    public static long getNextDayStart(long day, String scope) {
+        if (scope.equals("MS")) {
+            return getNextDayStart(day) * 1000;
+        } else if (scope.equals("S")) {
+            return getNextDayStart(day);
+        } else {
+            return getNextDayStart(day);
+        }
     }
-    
+
 
     /**
-     *
      * @param day
      * @return
      */
@@ -184,7 +177,6 @@ public class DateUtil {
     }
 
     /**
-     *
      * @author yumo.lck
      */
     public static int getYear(long day) {
@@ -194,7 +186,6 @@ public class DateUtil {
     }
 
     /**
-     *
      * @param day
      * @return
      */
@@ -214,7 +205,7 @@ public class DateUtil {
 
     /**
      * 根据某个日期时间戳秒值，获取所在周在一年中是第几周.
-     * 
+     *
      * @param day
      * @return
      */
@@ -225,30 +216,28 @@ public class DateUtil {
     }
 
     /**
-     *
      * @param day
      * @param inFormat
      * @param outFormat
      * @return String
      * @throws ParseException
      */
-    public static String getYesterdayByString(String day, String inFormat, String outFormat){
+    public static String getYesterdayByString(String day, String inFormat, String outFormat) {
         try {
-			SimpleDateFormat sdf = new SimpleDateFormat(inFormat);
-			Date date = sdf.parse(day);
-			Calendar calendar = Calendar.getInstance();
-			calendar.setTime(date);
-			int calendarDay = calendar.get(Calendar.DATE);
-			calendar.set(Calendar.DATE, calendarDay - 1);
-			String dayBefore = new SimpleDateFormat(outFormat).format(calendar.getTime());
-			return dayBefore;
-		} catch (ParseException e) {
-			return null;
-		}
+            SimpleDateFormat sdf = new SimpleDateFormat(inFormat);
+            Date date = sdf.parse(day);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            int calendarDay = calendar.get(Calendar.DATE);
+            calendar.set(Calendar.DATE, calendarDay - 1);
+            String dayBefore = new SimpleDateFormat(outFormat).format(calendar.getTime());
+            return dayBefore;
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
     /**
-     *
      * @param day
      * @param inFormat
      * @param outFormat
@@ -265,9 +254,8 @@ public class DateUtil {
         String dayBefore = new SimpleDateFormat(outFormat).format(calendar.getTime());
         return dayBefore;
     }
-    
+
     /**
-     *
      * @param date
      * @return Date
      * @throws ParseException
@@ -281,7 +269,6 @@ public class DateUtil {
     }
 
     /**
-     *
      * @param day
      * @param inFormat
      * @param outFormat
@@ -297,9 +284,8 @@ public class DateUtil {
         calendar.set(Calendar.DATE, calendarDay - 30);
         return new SimpleDateFormat(outFormat).format(calendar.getTime());
     }
-    
+
     /**
-     *
      * @param day
      * @param inFormat
      * @param outFormat
@@ -307,19 +293,18 @@ public class DateUtil {
      * @throws ParseException
      */
     public static String get30DaysLaterByString(String day, String inFormat, String outFormat) throws ParseException {
-    	SimpleDateFormat sdf = new SimpleDateFormat(inFormat);
-    	Date date = sdf.parse(day);
-    	Calendar calendar = Calendar.getInstance();
-    	calendar.setTime(date);
-    	int calendarDay = calendar.get(Calendar.DATE);
-    	calendar.set(Calendar.DATE, calendarDay + 30);
-    	String dayBefore = new SimpleDateFormat(outFormat).format(calendar.getTime());
-    	return dayBefore;
+        SimpleDateFormat sdf = new SimpleDateFormat(inFormat);
+        Date date = sdf.parse(day);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int calendarDay = calendar.get(Calendar.DATE);
+        calendar.set(Calendar.DATE, calendarDay + 30);
+        String dayBefore = new SimpleDateFormat(outFormat).format(calendar.getTime());
+        return dayBefore;
     }
 
 
     /**
-     *
      * @param day
      * @param inFormat
      * @param outFormat
@@ -334,21 +319,20 @@ public class DateUtil {
         String dayBefore = new SimpleDateFormat(outFormat).format(calendar.getTime());
         return dayBefore;
     }
-    
+
     public static long getDateMillTOFormat(String day, String inFormat) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat(inFormat);
         Date date = sdf.parse(day);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        return calendar.getTimeInMillis()/1000;
+        return calendar.getTimeInMillis() / 1000;
     }
 
     /**
-     *
-     * @author sishu.yss
      * @param year
      * @param month
      * @return
+     * @author sishu.yss
      */
     public static long getFirstDay4Month(int year, int month) {
         long firstDay = 0L;
@@ -365,11 +349,10 @@ public class DateUtil {
     }
 
     /**
-     *
-     * @author yumo.lck
      * @param year
      * @param month
      * @return
+     * @author yumo.lck
      */
     public static long getLastDay4Month(int year, int month) {
         long lastDay = 0L;
@@ -387,9 +370,8 @@ public class DateUtil {
     }
 
     /**
-     *
-     * @author yumo.lck
      * @param chooseFirstDay
+     * @author yumo.lck
      */
 
     public static long getBeforeMonthDay(long day, boolean chooseFirstDay) {
@@ -425,7 +407,6 @@ public class DateUtil {
     }
 
     /**
-     *
      * @return long
      */
     public static long getMillByYesDay() {
@@ -439,7 +420,6 @@ public class DateUtil {
     }
 
     /**
-     *
      * @return
      */
     public static long getMillByLastWeekDay() {
@@ -451,79 +431,80 @@ public class DateUtil {
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTimeInMillis() / 1000;
     }
-    
-   /**
-    * @return long
-    */
-    public static long getMillByDay(int severalDays,String condition) {
-    	int dateT=0;
+
+    /**
+     * @return long
+     */
+    public static long getMillByDay(int severalDays, String condition) {
+        int dateT = 0;
         Calendar cal = Calendar.getInstance();
-    	if(condition==null){
-    		return getMillToDay(cal,dateT);
-    	}
-        if(condition.equals("-")){
-        	dateT = (cal.get(Calendar.DATE) - severalDays);
-        	return getMillToDay(cal,dateT);
+        if (condition == null) {
+            return getMillToDay(cal, dateT);
         }
-        if(condition.equals("+")){
-        	dateT = (cal.get(Calendar.DATE) + severalDays);
-        	return getMillToDay(cal,dateT);
+        if (condition.equals("-")) {
+            dateT = (cal.get(Calendar.DATE) - severalDays);
+            return getMillToDay(cal, dateT);
         }
-		return getMillToDay(cal,dateT);
-  }
-    
+        if (condition.equals("+")) {
+            dateT = (cal.get(Calendar.DATE) + severalDays);
+            return getMillToDay(cal, dateT);
+        }
+        return getMillToDay(cal, dateT);
+    }
+
     /**
      * @return long
      */
-    public static long getStampByDay(int severalDays,String condition) {
-    	int dateT=0;
-    	Calendar cal = Calendar.getInstance();
-    	if(condition==null){
-    		return getStampToDay(cal,dateT);
-    	}
-    	if(condition.equals("-")){
-    		dateT = (cal.get(Calendar.DATE) - severalDays);
-    		return getStampToDay(cal,dateT);
-    	}
-    	if(condition.equals("+")){
-    		dateT = (cal.get(Calendar.DATE) + severalDays);
-    		return getStampToDay(cal,dateT);
-    	}
-    	return getStampToDay(cal,dateT);
+    public static long getStampByDay(int severalDays, String condition) {
+        int dateT = 0;
+        Calendar cal = Calendar.getInstance();
+        if (condition == null) {
+            return getStampToDay(cal, dateT);
+        }
+        if (condition.equals("-")) {
+            dateT = (cal.get(Calendar.DATE) - severalDays);
+            return getStampToDay(cal, dateT);
+        }
+        if (condition.equals("+")) {
+            dateT = (cal.get(Calendar.DATE) + severalDays);
+            return getStampToDay(cal, dateT);
+        }
+        return getStampToDay(cal, dateT);
     }
+
     /**
      * @return long
      */
-    public static long getMillByDay(){
-		return getMillByDay(0,null);
+    public static long getMillByDay() {
+        return getMillByDay(0, null);
     }
-    
+
     /**
-     * @param cal  Calendar
-     * @param dateT Integer 
-     * @return  long
+     * @param cal   Calendar
+     * @param dateT Integer
+     * @return long
      */
-    public static long getMillToDay(Calendar cal,int dateT){
-		   if(dateT!=0){
-			   cal.set(Calendar.DATE, dateT);
-		   }
-	       cal.set(Calendar.HOUR_OF_DAY, 0);
-	       cal.set(Calendar.MINUTE, 0);
-	       cal.set(Calendar.SECOND, 0);
-	       cal.set(Calendar.MILLISECOND, 0);
-	       return cal.getTimeInMillis()/1000;
-	}
-    
+    public static long getMillToDay(Calendar cal, int dateT) {
+        if (dateT != 0) {
+            cal.set(Calendar.DATE, dateT);
+        }
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTimeInMillis() / 1000;
+    }
+
     /**
-     * @param cal  Calendar
-     * @param dateT Integer 
-     * @return  long
+     * @param cal   Calendar
+     * @param dateT Integer
+     * @return long
      */
-    public static long getStampToDay(Calendar cal,int dateT){
-    	if(dateT!=0){
-    		cal.set(Calendar.DATE, dateT);
-    	}
-    	return cal.getTimeInMillis();
+    public static long getStampToDay(Calendar cal, int dateT) {
+        if (dateT != 0) {
+            cal.set(Calendar.DATE, dateT);
+        }
+        return cal.getTimeInMillis();
     }
 
     public static String getToday() {
@@ -545,67 +526,64 @@ public class DateUtil {
         SimpleDateFormat sf = new SimpleDateFormat(format);
         return sf.format(cal.getTime());
     }
-    
+
     /**
-     *
-     * @param  date
+     * @param date
      * @return
      */
     public static String getDate(Date date, String format) {
         SimpleDateFormat sf = new SimpleDateFormat(format);
         return sf.format(date);
     }
-    
-    
+
+
     /**
-     *
      * @param day
      * @param format
      * @return long
-     * @throws ParseException 
+     * @throws ParseException
      */
     public static long stringToLong(String day, String format) throws ParseException {
-    	SimpleDateFormat dateFormat = new SimpleDateFormat(format);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(format);
         long Date = dateFormat.parse(day).getTime();
-    	return Date;
+        return Date;
     }
-    
+
     /**
      * @param day
      * @param format
      * @return Date
      * @throws ParseException
      */
-    public static Date stringToDate(String day, String format)  {
-    	try {
-			SimpleDateFormat dateFormat = new SimpleDateFormat(format);
-			 Date Date = dateFormat.parse(day);
-			return Date;
-		} catch (ParseException e) {
-			return new Date();
-		}
+    public static Date stringToDate(String day, String format) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(format);
+            Date Date = dateFormat.parse(day);
+            return Date;
+        } catch (ParseException e) {
+            return new Date();
+        }
     }
-    
-    
+
+
     /**
      * long型时间戳转为String型
-     * 
+     *
      * @param day 秒
      * @return 格式化后的日期
-     * @throws ParseException 
+     * @throws ParseException
      */
     public static String longToString(long day, String format) throws ParseException {
-    	if (("" + day).length() <= 10){
-            day=day*1000;
+        if (("" + day).length() <= 10) {
+            day = day * 1000;
         }
-    	SimpleDateFormat dateFormat = new SimpleDateFormat(format);
-	    String Date = dateFormat.format(day);
-    	return Date;
+        SimpleDateFormat dateFormat = new SimpleDateFormat(format);
+        String Date = dateFormat.format(day);
+        return Date;
     }
 
     /**
-     *
-     * @param day 秒
+     * @param day      秒
      * @param minusDay 需要减掉的天数
      * @return 秒
      */
@@ -621,7 +599,6 @@ public class DateUtil {
     }
 
     /**
-     *
      * @return long
      */
     public static long getMillByNow() {
@@ -630,40 +607,39 @@ public class DateUtil {
         return cal.getTimeInMillis();
     }
 
-	public static int getWeeksBetweenTwoDates(long startDay, long endDay) {
-		int week = getWeekOfYear(endDay) - getWeekOfYear(startDay) + 1;
-		if(week<1){
-			week = getWeekOfYear(endDay) + getMaxWeekOfYear(startDay) - getWeekOfYear(startDay) + 1;
-		}
-		return week;
-	}
+    public static int getWeeksBetweenTwoDates(long startDay, long endDay) {
+        int week = getWeekOfYear(endDay) - getWeekOfYear(startDay) + 1;
+        if (week < 1) {
+            week = getWeekOfYear(endDay) + getMaxWeekOfYear(startDay) - getWeekOfYear(startDay) + 1;
+        }
+        return week;
+    }
 
-	public static int getMaxWeekOfYear(long startDay) {
-		Calendar cal = Calendar.getInstance();
+    public static int getMaxWeekOfYear(long startDay) {
+        Calendar cal = Calendar.getInstance();
         cal.setTime(new Date(startDay * 1000));
         return cal.getMaximum(Calendar.WEEK_OF_YEAR);
-	}
-	
-	public static int getMonthsBetweenTwoDates(long startDay, long endDay) {
-		int month = DateUtil.getMonth(endDay) - DateUtil.getMonth(startDay) + 1;
-		if(month<1){
-			month = getMonth(endDay) + 12 - getMonth(startDay) +1;
-		}
-		return month;
-	}
-	
-	public static Date parseDate(String dateStr, String pattern){
-		SimpleDateFormat sdf = new SimpleDateFormat();
-		sdf.applyPattern(pattern);
-		try {
-			return sdf.parse(dateStr);
-		} catch (ParseException e) {
-			return null;
-		}
-	}
-	
-	/**
-     *
+    }
+
+    public static int getMonthsBetweenTwoDates(long startDay, long endDay) {
+        int month = DateUtil.getMonth(endDay) - DateUtil.getMonth(startDay) + 1;
+        if (month < 1) {
+            month = getMonth(endDay) + 12 - getMonth(startDay) + 1;
+        }
+        return month;
+    }
+
+    public static Date parseDate(String dateStr, String pattern) {
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        sdf.applyPattern(pattern);
+        try {
+            return sdf.parse(dateStr);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    /**
      * @param time Long 时间
      * @return long
      */
@@ -680,7 +656,7 @@ public class DateUtil {
         firstDay = cal.getTimeInMillis() / 1000;
         return firstDay;
     }
-    
+
     /**
      * @param time Long
      * @return long
@@ -704,37 +680,37 @@ public class DateUtil {
      * @param time
      * @return Date
      */
-    public static Date getDateByLong(long time){
+    public static Date getDateByLong(long time) {
         Date date = new Date();
         date.setTime(time);
         return date;
     }
-    
 
-    public static Date parseDate(String dateStr, String pattern, Locale locale){
-    	SimpleDateFormat df = new SimpleDateFormat(
-				pattern, locale);
 
-		df.setTimeZone(new SimpleTimeZone(0, "GMT"));
-		try {
-			return df.parse(dateStr);
-		} catch (ParseException e) {
-			return null;
-		}
-	}
-    
+    public static Date parseDate(String dateStr, String pattern, Locale locale) {
+        SimpleDateFormat df = new SimpleDateFormat(
+                pattern, locale);
+
+        df.setTimeZone(new SimpleTimeZone(0, "GMT"));
+        try {
+            return df.parse(dateStr);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     public static String getDate(Date date, String format, Locale locale) {
-    	SimpleDateFormat df = new SimpleDateFormat(
-    			format, locale);
-    	df.setTimeZone(new SimpleTimeZone(0, "GMT"));
+        SimpleDateFormat df = new SimpleDateFormat(
+                format, locale);
+        df.setTimeZone(new SimpleTimeZone(0, "GMT"));
         return df.format(date);
     }
 
     public static Timestamp columnToTimestamp(Object column) {
         if (column == null) {
             return null;
-        } else if(column instanceof String) {
-            return new Timestamp(stringToDate((String)column).getTime());
+        } else if (column instanceof String) {
+            return new Timestamp(stringToDate((String) column).getTime());
         } else if (column instanceof Integer) {
             Integer rawData = (Integer) column;
             return new Timestamp(rawData.longValue());
@@ -743,10 +719,10 @@ public class DateUtil {
             return new Timestamp(rawData.longValue());
         } else if (column instanceof java.sql.Date) {
             return (Timestamp) column;
-        } else if(column instanceof Timestamp) {
+        } else if (column instanceof Timestamp) {
             return (Timestamp) column;
-        } else if(column instanceof Date) {
-            Date d = (Date)column;
+        } else if (column instanceof Date) {
+            Date d = (Date) column;
             return new Timestamp(d.getTime());
         }
 

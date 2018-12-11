@@ -1,8 +1,8 @@
 package com.sqlsteam
 
 import shapeless._
-import syntax.std.traversable._
-import syntax.std.tuple._
+import shapeless.syntax.std.traversable._
+import shapeless.syntax.std.tuple._
 
 object Test {
 

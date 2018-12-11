@@ -16,14 +16,12 @@
  * limitations under the License.
  */
 
- 
 
 package com.openspark.sqlstream.util;
 
 
-
 public class ConfigConstrant {
-	
+
     public static final String FLINK_CHECKPOINT_INTERVAL_KEY = "sql.checkpoint.interval";
 
     public static final String FLINK_CHECKPOINT_MODE_KEY = "sql.checkpoint.mode";
@@ -39,11 +37,13 @@ public class ConfigConstrant {
     public static final String SQL_ENV_PARALLELISM = "sql.env.parallelism";
 
     public static final String SQL_MAX_ENV_PARALLELISM = "sql.max.env.parallelism";
-    
+
     public static final String MR_JOB_PARALLELISM = "mr.job.parallelism";
-    
+
     public static final String SQL_BUFFER_TIMEOUT_MILLIS = "sql.buffer.timeout.millis";
 
     public static final String FLINK_TIME_CHARACTERISTIC_KEY = "time.characteristic";
+
+    public static final String ZOOKEPER_ADRESS = "172.18.250.91:2181";
 
 }

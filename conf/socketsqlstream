@@ -1,18 +1,19 @@
 CREATE TABLE SocketTable(
-    word string,
-    wordcount int
+    timestamp Timestamp,
+    word String
 )WITH(
     type='socket',
     host='hadoop-sh1-core1',
-    process='2s',
+    eventfield='timestamp',
+    eventwindow='10 seconds,5 seconds',
+    watermark='10 seconds',
     port='9998'
 );
 
 create SINK console(
 )WITH(
     type='console',
-    outputmode='complete',
-    process='2s'
+    outputmode='complete'
 );
 
-insert into console select word,count(wordcount) from SocketTable group by word;
+insert into console select eventwindow,word,count(*) from SocketTable group by eventwindow,word;

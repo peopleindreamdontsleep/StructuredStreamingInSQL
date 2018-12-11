@@ -2,7 +2,6 @@ package com.openspark.sqlstream.source;
 
 import com.openspark.sqlstream.parser.CreateTableParser;
 import com.openspark.sqlstream.util.DtStringUtil;
-import com.openspark.sqlstream.util.SparkUtil;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -14,10 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CsvInput implements BaseInput{
+public class CsvInput implements BaseInput {
 
-    Map<String,Object> csvMap = null;
+    Map<String, Object> csvMap = null;
     StructType schema = null;
+
     //生成datastream
     @Override
     public Dataset<Row> getDataSetStream(SparkSession spark, CreateTableParser.SqlParserResult config) {
@@ -30,11 +30,11 @@ public class CsvInput implements BaseInput{
         String fieldsInfoStr = config.getFieldsInfoStr();
         //获取具有schema的dataset
         String[] fieldRows = DtStringUtil.splitIgnoreQuotaBrackets(fieldsInfoStr, ",");
-        for(String fieldRow : fieldRows){
+        for (String fieldRow : fieldRows) {
             fieldRow = fieldRow.trim();
             String[] filedInfoArr = fieldRow.split("\\s+");
-            if(filedInfoArr.length < 2){
-                throw new RuntimeException("the legth of "+fieldRow+" is not right");
+            if (filedInfoArr.length < 2) {
+                throw new RuntimeException("the legth of " + fieldRow + " is not right");
             }
             //Compatible situation may arise in space in the fieldName
             String filedName = filedInfoArr[0].toUpperCase();
@@ -43,7 +43,7 @@ public class CsvInput implements BaseInput{
             fields.add(field);
         }
         //DataType stringType = DataTypes.StringType;
-        schema= DataTypes.createStructType(fields);
+        schema = DataTypes.createStructType(fields);
         Dataset<Row> lineRow = prepare(spark);
         return lineRow;
     }
@@ -54,11 +54,11 @@ public class CsvInput implements BaseInput{
         String delimiter = null;
         try {
             delimiter = csvMap.get("delimiter").toString();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("分隔符未配置，默认为逗号");
         }
-        if(delimiter==null){
-            csvMap.put("delimiter",",");
+        if (delimiter == null) {
+            csvMap.put("delimiter", ",");
         }
     }
 
@@ -72,7 +72,7 @@ public class CsvInput implements BaseInput{
     public void checkConfig() {
         Boolean isValid = csvMap.containsKey("path") &&
                 !csvMap.get("path").toString().trim().isEmpty();
-        if(!isValid){
+        if (!isValid) {
             throw new RuntimeException("path are needed in csvinput input and cant be empty");
             //System.exit(-1);
         }
@@ -90,10 +90,9 @@ public class CsvInput implements BaseInput{
         return lines;
     }
 
-    public String getName(){
+    public String getName() {
         return "name";
     }
-
 
 
 }

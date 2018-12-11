@@ -23,7 +23,6 @@ public class SqlTree {
     private Map<String, TableInfo> tableInfoMap = new LinkedHashMap();
 
 
-
     private List<InsertSqlParser.SqlParseResult> execSqlList = newArrayList();
 
     private InsertSqlParser.SqlParseResult execSql;
@@ -44,19 +43,19 @@ public class SqlTree {
         return execSqlList;
     }
 
-    public void addFunc(CreateFuncParser.SqlParserResult func){
+    public void addFunc(CreateFuncParser.SqlParserResult func) {
         functionList.add(func);
     }
 
-    public void addPreDealTableInfo(String tableName, CreateTableParser.SqlParserResult table){
+    public void addPreDealTableInfo(String tableName, CreateTableParser.SqlParserResult table) {
         preDealTableMap.put(tableName, table);
     }
 
-    public void addPreDealSinkInfo(String tableName, CreateTableParser.SqlParserResult table){
+    public void addPreDealSinkInfo(String tableName, CreateTableParser.SqlParserResult table) {
         preDealSinkMap.put(tableName, table);
     }
 
-    public void addExecSql(InsertSqlParser.SqlParseResult execSql){
+    public void addExecSql(InsertSqlParser.SqlParseResult execSql) {
         execSqlList.add(execSql);
     }
 
@@ -72,7 +71,7 @@ public class SqlTree {
         this.execSql = execSql;
     }
 
-    public void addTableInfo(String tableName, TableInfo tableInfo){
+    public void addTableInfo(String tableName, TableInfo tableInfo) {
         tableInfoMap.put(tableName, tableInfo);
     }
 }

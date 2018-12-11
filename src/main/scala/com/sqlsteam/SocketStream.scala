@@ -1,11 +1,12 @@
 package com.sqlsteam
 
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object SocketStream {
 
   case class wordcount(word: String, wordvalue: Int)
+
   def main(args: Array[String]): Unit = {
 
     val spark = SparkSession
@@ -17,8 +18,6 @@ object SocketStream {
       .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
 
-    import spark.implicits._
-
     val socketStreamDf = spark.readStream
       .format("socket")
       .option("host", "hadoop-sh1-core1")
@@ -27,18 +26,18 @@ object SocketStream {
 
     //implicit val mapEncoder = org.apache.spark.sql.Encoders.kryo[Customer]
 
-//    val salesDs = socketStreamDf
-//      .map(record =>{
-//        println(record.get(0))
-//        val recordValues = record.get(0).toString().split(",")
-//        wordcount(recordValues(0), recordValues(1).toInt)
-//      })
+    //    val salesDs = socketStreamDf
+    //      .map(record =>{
+    //        println(record.get(0))
+    //        val recordValues = record.get(0).toString().split(",")
+    //        wordcount(recordValues(0), recordValues(1).toInt)
+    //      })
     val schemaString = "name age"
     val schema =
       StructType(
         schemaString.split(" ").map(fieldName => StructField(fieldName, StringType, true)))
 
-    val schemaDf = spark.createDataFrame(socketStreamDf.rdd,schema)
+    val schemaDf = spark.createDataFrame(socketStreamDf.rdd, schema)
 
 
     schemaDf.printSchema()

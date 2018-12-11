@@ -15,7 +15,7 @@ public class CsvInputTest {
         SparkSession spark = SparkSession
                 .builder()
                 .config("spark.default.parallelism", "1")
-                .config("spark.sql.shuffle.partitions","1")
+                .config("spark.sql.shuffle.partitions", "1")
                 .appName("CsvInputTest")
                 .master("local[2]")
                 .getOrCreate();

@@ -1,4 +1,3 @@
-
 package com.openspark.sqlstream.parser;
 
 import com.openspark.sqlstream.util.DtStringUtil;
@@ -16,7 +15,7 @@ public class CreateSinkParser implements IParser {
 
     private static final Pattern PATTERN = Pattern.compile(PATTERN_STR);
 
-    public static CreateSinkParser newInstance(){
+    public static CreateSinkParser newInstance() {
         return new CreateSinkParser();
     }
 
@@ -26,7 +25,7 @@ public class CreateSinkParser implements IParser {
 
     public void parseSql(String sql, SqlTree sqlTree) {
         Matcher matcher = PATTERN.matcher(sql);
-        if(matcher.find()){
+        if (matcher.find()) {
             String tableName = matcher.group(1).toUpperCase();
             String fieldsInfoStr = matcher.group(2);
             String propsStr = matcher.group(3);
@@ -41,10 +40,10 @@ public class CreateSinkParser implements IParser {
         }
     }
 
-    private Map parseProp(String propsStr){
+    private Map parseProp(String propsStr) {
         String[] strs = propsStr.trim().split("'\\s*,");
         Map<String, Object> propMap = new HashMap<>();
-        for(int i=0; i<strs.length; i++){
+        for (int i = 0; i < strs.length; i++) {
             List<String> ss = DtStringUtil.splitIgnoreQuota(strs[i], '=');
             String key = ss.get(0).trim();
             String value = ss.get(1).trim().replaceAll("'", "").trim();

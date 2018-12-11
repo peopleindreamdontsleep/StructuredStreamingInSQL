@@ -15,7 +15,7 @@ public class KafkaInputTest {
         SparkSession spark = SparkSession
                 .builder()
                 .config("spark.default.parallelism", "1")
-                .config("spark.sql.shuffle.partitions","1")
+                .config("spark.sql.shuffle.partitions", "1")
                 .appName("KafkaInputTest")
                 .master("local[2]")
                 .getOrCreate();
@@ -26,7 +26,7 @@ public class KafkaInputTest {
                 .format("kafka")
                 .option("kafka.bootstrap.servers", "dfttshowkafka001:9092")
                 .option("subscribe", "test")
-                .option("group.id","test")
+                .option("group.id", "test")
                 .load();
         lines.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)");
 

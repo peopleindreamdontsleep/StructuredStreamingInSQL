@@ -2,35 +2,43 @@ package com.openspark.structured;
 
 import net.sf.json.JSONObject;
 import org.apache.spark.api.java.function.MapPartitionsFunction;
-import org.apache.spark.sql.*;
-import static org.apache.spark.sql.functions.*;
-
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
-import org.apache.spark.sql.types.*;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.MetadataBuilder;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
+import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.from_json;
 import static org.apache.spark.sql.streaming.Trigger.ProcessingTime;
 
 public class SocketInputTest {
 
     private static Logger logger = LoggerFactory.getLogger(SocketInputTest.class);
+
     public static void main(String[] args) throws StreamingQueryException, ClassNotFoundException {
 
-        System.setProperty("hadoop.home.dir","F:\\data\\hadooponwindows-master\\hadooponwindows-master" );
+        System.setProperty("hadoop.home.dir", "F:\\data\\hadooponwindows-master\\hadooponwindows-master");
 
         SparkSession spark = SparkSession
                 .builder()
                 .config("spark.default.parallelism", "1")
-                .config("spark.sql.shuffle.partitions","1")
+                .config("spark.sql.shuffle.partitions", "1")
                 .appName("JavaStructuredNetworkWordCount")
                 .master("local[2]")
                 .getOrCreate();
         spark.sparkContext().setLogLevel("WARN");
-
 
 
         Dataset<Row> lines = spark
@@ -47,9 +55,9 @@ public class SocketInputTest {
         //Dataset<WordCount> classDataset = lines.as(ExpressionEncoder.javaBean(WordCount.class));
 
         MetadataBuilder b = new MetadataBuilder();
-        StructField[] fields={
-                new StructField("name",DataTypes.IntegerType, true,b.build()),
-                new StructField("age",DataTypes.IntegerType, true,b.build()),
+        StructField[] fields = {
+                new StructField("name", DataTypes.IntegerType, true, b.build()),
+                new StructField("age", DataTypes.IntegerType, true, b.build()),
         };
         StructType type = new StructType(fields);
 
@@ -60,26 +68,26 @@ public class SocketInputTest {
                     public Iterator<String> call(Iterator<String> input) throws Exception {
                         List<String> recordList = new ArrayList<>();
                         JSONObject jsonObject = new JSONObject();
-                        while (input.hasNext()){
+                        while (input.hasNext()) {
                             String record = input.next();
                             String[] split = record.split(",");
-                            for (int i = 0; i <split.length ; i++) {
-                                try{
-                                    jsonObject.put(field.get(i).split(" ")[0],Integer.valueOf(split[i]));
-                                }catch (Exception e){
-                                    System.out.println("erro line:"+record);
+                            for (int i = 0; i < split.length; i++) {
+                                try {
+                                    jsonObject.put(field.get(i).split(" ")[0], Integer.valueOf(split[i]));
+                                } catch (Exception e) {
+                                    System.out.println("erro line:" + record);
                                 }
                             }
                             recordList.add(jsonObject.toString());
                         }
                         return recordList.iterator();
                     }
-                },Encoders.STRING());
+                }, Encoders.STRING());
 
         Dataset<Row> d2 = words1
                 .selectExpr("CAST(value AS STRING)")
-                .select(from_json(col("value"),type).as("v"))
-                .selectExpr("v.name","v.age");
+                .select(from_json(col("value"), type).as("v"))
+                .selectExpr("v.name", "v.age");
 
         //Dataset<Row> dataFrame = spark.createDataFrame(words1.javaRDD(), type);
         d2.printSchema();

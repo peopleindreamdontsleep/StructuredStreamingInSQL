@@ -16,13 +16,12 @@
  * limitations under the License.
  */
 
- 
 
 package com.openspark.sqlstream.parser;
 
 import org.apache.calcite.sql.*;
-import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.SqlParseException;
+import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -43,7 +42,7 @@ public class InsertSqlParser implements IParser {
         return StringUtils.isNotBlank(sql) && sql.trim().toLowerCase().startsWith("insert");
     }
 
-    public static InsertSqlParser newInstance(){
+    public static InsertSqlParser newInstance() {
         InsertSqlParser parser = new InsertSqlParser();
         return parser;
     }
@@ -66,46 +65,46 @@ public class InsertSqlParser implements IParser {
         sqlTree.setExecSql(sqlParseResult);
     }
 
-    private static void parseNode(SqlNode sqlNode, SqlParseResult sqlParseResult){
+    private static void parseNode(SqlNode sqlNode, SqlParseResult sqlParseResult) {
         SqlKind sqlKind = sqlNode.getKind();
-        switch (sqlKind){
+        switch (sqlKind) {
             case INSERT:
-                SqlNode sqlTarget = ((SqlInsert)sqlNode).getTargetTable();
-                SqlNode sqlSource = ((SqlInsert)sqlNode).getSource();
+                SqlNode sqlTarget = ((SqlInsert) sqlNode).getTargetTable();
+                SqlNode sqlSource = ((SqlInsert) sqlNode).getSource();
                 querySql = sqlSource.toString();
                 sqlParseResult.setTargetTable(sqlTarget.toString());
                 parseNode(sqlSource, sqlParseResult);
                 break;
             case SELECT:
-                SqlNode sqlFrom = ((SqlSelect)sqlNode).getFrom();
-                if(sqlFrom.getKind() == IDENTIFIER){
+                SqlNode sqlFrom = ((SqlSelect) sqlNode).getFrom();
+                if (sqlFrom.getKind() == IDENTIFIER) {
                     sqlParseResult.addSourceTable(sqlFrom.toString());
-                }else{
+                } else {
                     parseNode(sqlFrom, sqlParseResult);
                 }
                 break;
             case JOIN:
-                SqlNode leftNode = ((SqlJoin)sqlNode).getLeft();
-                SqlNode rightNode = ((SqlJoin)sqlNode).getRight();
+                SqlNode leftNode = ((SqlJoin) sqlNode).getLeft();
+                SqlNode rightNode = ((SqlJoin) sqlNode).getRight();
 
-                if(leftNode.getKind() == IDENTIFIER){
+                if (leftNode.getKind() == IDENTIFIER) {
                     sqlParseResult.addSourceTable(leftNode.toString());
-                }else{
+                } else {
                     parseNode(leftNode, sqlParseResult);
                 }
 
-                if(rightNode.getKind() == IDENTIFIER){
+                if (rightNode.getKind() == IDENTIFIER) {
                     sqlParseResult.addSourceTable(rightNode.toString());
-                }else{
+                } else {
                     parseNode(rightNode, sqlParseResult);
                 }
                 break;
             case AS:
                 //不解析column,所以 as 相关的都是表
-                SqlNode identifierNode = ((SqlBasicCall)sqlNode).getOperands()[0];
-                if(identifierNode.getKind() != IDENTIFIER){
+                SqlNode identifierNode = ((SqlBasicCall) sqlNode).getOperands()[0];
+                if (identifierNode.getKind() != IDENTIFIER) {
                     parseNode(identifierNode, sqlParseResult);
-                }else {
+                } else {
                     sqlParseResult.addSourceTable(identifierNode.toString());
                 }
                 break;
@@ -127,11 +126,11 @@ public class InsertSqlParser implements IParser {
 
         private String querySql;
 
-        public void addSourceTable(String sourceTable){
+        public void addSourceTable(String sourceTable) {
             sourceTableList.add(sourceTable);
         }
 
-        public void addTargetTable(String targetTable){
+        public void addTargetTable(String targetTable) {
             targetTableList.add(targetTable);
         }
 

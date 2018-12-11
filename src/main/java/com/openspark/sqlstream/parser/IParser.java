@@ -1,4 +1,3 @@
-
 package com.openspark.sqlstream.parser;
 
 
@@ -6,6 +5,7 @@ public interface IParser {
 
     /**
      * 是否满足该解析类型
+     *
      * @param sql
      * @return
      */

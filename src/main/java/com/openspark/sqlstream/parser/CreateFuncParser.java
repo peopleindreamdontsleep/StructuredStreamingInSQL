@@ -1,10 +1,7 @@
-
 package com.openspark.sqlstream.parser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
 
 public class CreateFuncParser implements IParser {
 
@@ -19,7 +16,7 @@ public class CreateFuncParser implements IParser {
 
     public void parseSql(String sql, SqlTree sqlTree) {
         Matcher matcher = funcPattern.matcher(sql);
-        if(matcher.find()){
+        if (matcher.find()) {
             String type = matcher.group(1);
             String funcName = matcher.group(2);
             String className = matcher.group(3);
@@ -32,11 +29,11 @@ public class CreateFuncParser implements IParser {
     }
 
 
-    public static CreateFuncParser newInstance(){
+    public static CreateFuncParser newInstance() {
         return new CreateFuncParser();
     }
 
-    public static class SqlParserResult{
+    public static class SqlParserResult {
 
         private String name;
 

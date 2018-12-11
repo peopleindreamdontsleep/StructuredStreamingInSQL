@@ -1,8 +1,6 @@
-
 package com.openspark.sqlstream.parser;
 
 import com.openspark.sqlstream.util.DtStringUtil;
-
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +15,7 @@ public class CreateTableParser implements IParser {
 
     private static final Pattern PATTERN = Pattern.compile(PATTERN_STR);
 
-    public static CreateTableParser newInstance(){
+    public static CreateTableParser newInstance() {
         return new CreateTableParser();
     }
 
@@ -27,7 +25,7 @@ public class CreateTableParser implements IParser {
 
     public void parseSql(String sql, SqlTree sqlTree) {
         Matcher matcher = PATTERN.matcher(sql);
-        if(matcher.find()){
+        if (matcher.find()) {
             String tableName = matcher.group(1).toUpperCase();
             String fieldsInfoStr = matcher.group(2);
             String propsStr = matcher.group(3);
@@ -42,10 +40,10 @@ public class CreateTableParser implements IParser {
         }
     }
 
-    private Map parseProp(String propsStr){
+    private Map parseProp(String propsStr) {
         String[] strs = propsStr.trim().split("'\\s*,");
         Map<String, Object> propMap = new HashMap<>();
-        for(int i=0; i<strs.length; i++){
+        for (int i = 0; i < strs.length; i++) {
             List<String> ss = DtStringUtil.splitIgnoreQuota(strs[i], '=');
             String key = ss.get(0).trim();
             String value = ss.get(1).trim().replaceAll("'", "").trim();
@@ -55,7 +53,7 @@ public class CreateTableParser implements IParser {
         return propMap;
     }
 
-    public static class SqlParserResult{
+    public static class SqlParserResult {
 
         private String tableName;
 

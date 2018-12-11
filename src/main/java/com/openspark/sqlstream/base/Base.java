@@ -6,12 +6,8 @@ import org.apache.spark.sql.SparkSession;
 
 public interface Base {
 
-
-
     void checkConfig();
 
-    /**
-     * Prepare before running, do things like set config default value, add broadcast variable, accumulator.
-     */
+
     Dataset<Row> prepare(SparkSession spark);
 }

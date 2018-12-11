@@ -1,4 +1,3 @@
-
 package com.openspark.sqlstream.parser;
 
 
@@ -74,31 +73,31 @@ public abstract class TableInfo {
     }
 
     public void setParallelism(Integer parallelism) {
-        if(parallelism == null){
+        if (parallelism == null) {
             return;
         }
 
-        if(parallelism <= 0){
+        if (parallelism <= 0) {
             throw new RuntimeException("Abnormal parameter settings: parallelism > 0");
         }
 
         this.parallelism = parallelism;
     }
 
-    public void addField(String fieldName){
+    public void addField(String fieldName) {
         fieldList.add(fieldName);
     }
 
-    public void addFieldClass(Class fieldClass){
+    public void addFieldClass(Class fieldClass) {
         fieldClassList.add(fieldClass);
     }
 
-    public void addFieldType(String fieldType){
+    public void addFieldType(String fieldType) {
         fieldTypeList.add(fieldType);
     }
 
 
-    public void finish(){
+    public void finish() {
         this.fields = fieldList.toArray(new String[fieldList.size()]);
         this.fieldClasses = fieldClassList.toArray(new Class[fieldClassList.size()]);
         this.fieldTypes = fieldTypeList.toArray(new String[fieldTypeList.size()]);

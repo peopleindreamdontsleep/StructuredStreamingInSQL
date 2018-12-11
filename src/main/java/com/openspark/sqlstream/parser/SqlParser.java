@@ -2,10 +2,11 @@ package com.openspark.sqlstream.parser;
 
 import com.openspark.sqlstream.util.DtStringUtil;
 import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 
-import static com.openspark.sqlstream.util.DtStringUtil.*;
-
+import static com.openspark.sqlstream.util.DtStringUtil.isNullOrEmpty;
+import static com.openspark.sqlstream.util.DtStringUtil.newArrayList;
 
 
 public class SqlParser {
@@ -14,18 +15,19 @@ public class SqlParser {
 
 
     private static List<IParser> sqlParserList = newArrayList(CreateFuncParser.newInstance(),
-            CreateTableParser.newInstance(), InsertSqlParser.newInstance(),CreateSinkParser.newInstance());
+            CreateTableParser.newInstance(), InsertSqlParser.newInstance(), CreateSinkParser.newInstance());
 
     /**
      * flink support sql syntax
      * CREATE TABLE sls_stream() with ();
      * CREATE (TABLE|SCALA) FUNCTION fcnName WITH com.dtstack.com;
      * insert into tb1 select * from tb2;
+     *
      * @param sql
      */
     public static SqlTree parseSql(String sql) throws Exception {
 
-        if(StringUtils.isBlank(sql)){
+        if (StringUtils.isBlank(sql)) {
             throw new RuntimeException("sql is not null");
         }
 
@@ -39,29 +41,29 @@ public class SqlParser {
         List<String> sqlArr = DtStringUtil.splitIgnoreQuota(sql, SQL_DELIMITER);
         SqlTree sqlTree = new SqlTree();
 
-        for(String childSql : sqlArr){
-            if(isNullOrEmpty(childSql)){
+        for (String childSql : sqlArr) {
+            if (isNullOrEmpty(childSql)) {
                 continue;
             }
             boolean result = false;
             //sqlParserListh含有三种解析类型，CreateFuncParser——CreateTableParser——InsertSqlParser
             //为每一个sql查找合适的解析类型
-            for(IParser sqlParser : sqlParserList){
-                if(!sqlParser.verify(childSql)){
+            for (IParser sqlParser : sqlParserList) {
+                if (!sqlParser.verify(childSql)) {
                     continue;
                 }
                 sqlParser.parseSql(childSql, sqlTree);
                 result = true;
             }
 
-            if(!result){
+            if (!result) {
                 throw new RuntimeException(String.format("%s:Syntax does not support,the format of SQL like insert into tb1 select * from tb2.", childSql));
             }
         }
 
         //解析exec-sql
         System.out.println();
-        if(sqlTree.getExecSqlList().size() == 0 && sqlTree.getExecSql()==null){
+        if (sqlTree.getExecSqlList().size() == 0 && sqlTree.getExecSql() == null) {
             throw new RuntimeException("sql no executable statement");
         }
 

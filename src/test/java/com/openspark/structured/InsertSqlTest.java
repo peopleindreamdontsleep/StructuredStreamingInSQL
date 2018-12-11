@@ -1,6 +1,5 @@
 package com.openspark.structured;
 
-import com.openspark.sqlstream.parser.CreateTableParser;
 import com.openspark.sqlstream.parser.InsertSqlParser;
 import com.openspark.sqlstream.parser.SqlTree;
 
@@ -14,12 +13,12 @@ public class InsertSqlTest {
         InsertSqlParser insertSqlParser = InsertSqlParser.newInstance();
         SqlTree sqlTree = new SqlTree();
         boolean verify = insertSqlParser.verify(sqlStr);
-        if(verify){
-            insertSqlParser.parseSql(sqlStr,sqlTree);
+        if (verify) {
+            insertSqlParser.parseSql(sqlStr, sqlTree);
         }
         List<InsertSqlParser.SqlParseResult> execSqlList = sqlTree.getExecSqlList();
 
-        for (InsertSqlParser.SqlParseResult result:execSqlList) {
+        for (InsertSqlParser.SqlParseResult result : execSqlList) {
             System.out.println(result.getTargetTable());
             System.out.println(result.getSourceTableList());
             System.out.println(result.getExecSql());

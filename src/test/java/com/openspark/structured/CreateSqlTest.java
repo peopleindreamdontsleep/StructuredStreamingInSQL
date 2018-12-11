@@ -3,10 +3,8 @@ package com.openspark.structured;
 import com.openspark.sqlstream.parser.CreateTableParser;
 import com.openspark.sqlstream.parser.SqlTree;
 import com.openspark.sqlstream.source.BaseInput;
-import com.openspark.sqlstream.source.SocketInput;
 import com.openspark.sqlstream.util.DtStringUtil;
 
-import java.util.List;
 import java.util.Map;
 
 public class CreateSqlTest {
@@ -20,21 +18,21 @@ public class CreateSqlTest {
         boolean verify = createTableParser.verify(sqlStr);
         SqlTree sqlTree = new SqlTree();
 
-        if(verify){
-            createTableParser.parseSql(sqlStr,sqlTree);
+        if (verify) {
+            createTableParser.parseSql(sqlStr, sqlTree);
         }
         Map<String, CreateTableParser.SqlParserResult> preDealTableMap = sqlTree.getPreDealTableMap();
 
-        preDealTableMap.forEach((key,val)->{
-            System.out.println(key+" "+val.getFieldsInfoStr());
+        preDealTableMap.forEach((key, val) -> {
+            System.out.println(key + " " + val.getFieldsInfoStr());
         });
 
-        for (String mapKey:sqlTree.getPreDealTableMap().keySet()) {
-            System.out.println(mapKey+" = "+sqlTree.getPreDealTableMap().get(mapKey).getFieldsInfoStr());
-            String type = (String)sqlTree.getPreDealTableMap().get(mapKey).getPropMap().get("type");
-            String upperType  = DtStringUtil.upperCaseFirstChar(type)+"Input";
+        for (String mapKey : sqlTree.getPreDealTableMap().keySet()) {
+            System.out.println(mapKey + " = " + sqlTree.getPreDealTableMap().get(mapKey).getFieldsInfoStr());
+            String type = (String) sqlTree.getPreDealTableMap().get(mapKey).getPropMap().get("type");
+            String upperType = DtStringUtil.upperCaseFirstChar(type) + "Input";
 
-            BaseInput inputBase =null;
+            BaseInput inputBase = null;
             try {
                 inputBase = Class.forName(sourceBasePackage + upperType).asSubclass(BaseInput.class).newInstance();
             } catch (InstantiationException e) {
