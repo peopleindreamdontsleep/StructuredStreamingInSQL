@@ -1,4 +1,4 @@
-# sqlstream
+# StructuredStreamingInSQL
 Timestamp 类型格式 2018-12-07 16:34:31
 ### 需要的配置只有一个sql文件
 #### 1.实现socket输入 console输出
