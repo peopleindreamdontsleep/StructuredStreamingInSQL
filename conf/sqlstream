@@ -1,10 +1,10 @@
 CREATE TABLE kafkaTable(
-    word string,
-    wordcount int
+    word string
 )WITH(
     type='kafka',
     kafka.bootstrap.servers='dfttshowkafka001:9092',
-    process='2s',
+    processwindow='10 seconds,10 seconds',
+    watermark='10 seconds',
     subscribe='test',
     group='test'
 );
@@ -13,7 +13,7 @@ create SINK consoleOut(
 )WITH(
     type='console',
     outputmode='complete',
-    process='2s'
+    process='10s'
 );
 
-insert into consoleOut select word,count(wordcount) from kafkaTable group by word;
+insert into consoleOut select processwindow,word,count(*) from kafkaTable group by word,processwindow;

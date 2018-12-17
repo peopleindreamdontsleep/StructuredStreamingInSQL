@@ -4,6 +4,7 @@ import com.openspark.sqlstream.parser.InsertSqlParser;
 import com.openspark.sqlstream.parser.SqlTree;
 
 import java.util.List;
+import java.util.Set;
 
 public class InsertSqlTest {
 
@@ -16,7 +17,7 @@ public class InsertSqlTest {
         if (verify) {
             insertSqlParser.parseSql(sqlStr, sqlTree);
         }
-        List<InsertSqlParser.SqlParseResult> execSqlList = sqlTree.getExecSqlList();
+        Set<InsertSqlParser.SqlParseResult> execSqlList = sqlTree.getExecSqlList();
 
         for (InsertSqlParser.SqlParseResult result : execSqlList) {
             System.out.println(result.getTargetTable());

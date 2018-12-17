@@ -7,12 +7,15 @@ import java.util.List;
 
 import static com.openspark.sqlstream.util.DtStringUtil.isNullOrEmpty;
 import static com.openspark.sqlstream.util.DtStringUtil.newArrayList;
+import static com.openspark.sqlstream.util.DynamicChangeUtil.getDataNode;
+import static com.openspark.sqlstream.util.DynamicChangeUtil.getZkclient;
 
 
 public class SqlParser {
 
     private static final char SQL_DELIMITER = ';';
 
+    public static SqlTree sqlTree;
 
     private static List<IParser> sqlParserList = newArrayList(CreateFuncParser.newInstance(),
             CreateTableParser.newInstance(), InsertSqlParser.newInstance(), CreateSinkParser.newInstance());
@@ -25,12 +28,13 @@ public class SqlParser {
      *
      * @param sql
      */
-    public static SqlTree parseSql(String sql) throws Exception {
+    //public static SqlTree parseSql(String sql) throws Exception {
+    public static void parseSql(String sql) throws Exception {
 
         if (StringUtils.isBlank(sql)) {
-            throw new RuntimeException("sql is not null");
+            sql = getDataNode(getZkclient(),"/sqlstream/sql");
+            //throw new RuntimeException("sql is not null");
         }
-
 
         sql = sql.replaceAll("--.*", "")
                 .replaceAll("\r\n", " ")
@@ -48,6 +52,7 @@ public class SqlParser {
             boolean result = false;
             //sqlParserListh含有三种解析类型，CreateFuncParser——CreateTableParser——InsertSqlParser
             //为每一个sql查找合适的解析类型
+
             for (IParser sqlParser : sqlParserList) {
                 if (!sqlParser.verify(childSql)) {
                     continue;
@@ -62,10 +67,10 @@ public class SqlParser {
         }
 
         //解析exec-sql
-        System.out.println();
         if (sqlTree.getExecSqlList().size() == 0 && sqlTree.getExecSql() == null) {
             throw new RuntimeException("sql no executable statement");
         }
+        SqlParser.sqlTree = sqlTree;
 
 //        for(InsertSqlParser.SqlParseResult result : sqlTree.getExecSqlList()){
 //            List<String> sourceTableList = result.getSourceTableList();
@@ -94,6 +99,6 @@ public class SqlParser {
 //            }
 //        }
 
-        return sqlTree;
+        //return sqlTree;
     }
 }

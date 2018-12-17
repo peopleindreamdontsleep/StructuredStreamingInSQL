@@ -1,23 +1,37 @@
 package com.openspark.sqlstream.util;
 
+import com.openspark.sqlstream.base.WindowType;
 import com.openspark.sqlstream.parser.CreateTableParser;
+import com.openspark.sqlstream.parser.InsertSqlParser;
+import com.openspark.sqlstream.parser.SqlParser;
 import com.openspark.sqlstream.parser.SqlTree;
 import com.openspark.sqlstream.sink.BaseOuput;
 import com.openspark.sqlstream.source.BaseInput;
 import net.sf.json.JSONObject;
+import org.apache.spark.ContextCleaner;
 import org.apache.spark.api.java.function.MapPartitionsFunction;
+import org.apache.spark.metrics.source.Source;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.catalyst.TableIdentifier;
+import org.apache.spark.sql.execution.streaming.MetricsReporter;
+import org.apache.spark.sql.execution.streaming.StreamExecution;
 import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.StreamingQueryException;
+import org.apache.spark.sql.streaming.StreamingQueryManager;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.MetadataBuilder;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import scala.Option;
 import scala.Tuple2;
+import scala.collection.Seq;
 
 import java.sql.Timestamp;
 import java.util.*;
 
 import static com.openspark.sqlstream.util.DtStringUtil.strConverType;
+import static com.openspark.sqlstream.util.DynamicChangeUtil.getDataNode;
+import static com.openspark.sqlstream.util.DynamicChangeUtil.getZkclient;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.from_json;
 
@@ -25,6 +39,8 @@ public class SparkUtil {
 
     static String sourceBasePackage = "com.openspark.sqlstream.source.";
     static String sinkBasePackage = "com.openspark.sqlstream.sink.";
+    public static StreamingQuery streamingQuery = null;
+    static SparkSession spark = null;
 
     //将input的内容注册成带schame的dataset
     public static Dataset<Row> createDataSet(Dataset<Row> lineRow, String fieldsInfoStr, String lineDelimit, Map<String, Object> proMap) {
@@ -125,7 +141,7 @@ public class SparkUtil {
                 .selectExpr(seExpr);
 
 //window解析相关
-        String windowType = getWindowType(proMap);
+        WindowType windowType = getWindowType(proMap);
 
         Dataset<Row> datasetWithWindow = getDatasetWithWindow(transDataSet, windowType, proMap);
 
@@ -147,8 +163,13 @@ public class SparkUtil {
     }
 
     //添加sql中增加window函数
-    public static Map<String, Dataset<Row>> getTableList(SparkSession spark, SqlTree sqlTree) {
+    public static Map<String, Dataset<Row>> getTableList(SparkSession spark, SqlTree sqlTree) throws Exception {
         Map<String, Dataset<Row>> rowTableList = new HashMap<>();
+        if(sqlTree==null){
+            SqlParser.parseSql(getDataNode(getZkclient(),"/sqlstream/sql"));
+            sqlTree = SqlParser.sqlTree;
+            //throw new RuntimeException("sqltree s是空的");
+        }
         Map<String, CreateTableParser.SqlParserResult> preDealTableMap = sqlTree.getPreDealTableMap();
         for (String key : preDealTableMap.keySet()) {
             //key是每个table的名字
@@ -176,17 +197,30 @@ public class SparkUtil {
         return outputBase;
     }
 
-    public static StreamingQuery tableOutput(SparkSession spark, String targetTable, Dataset<Row> queryResult, Map<String, CreateTableParser.SqlParserResult> preDealSinkMap) {
+    public static StreamingQuery tableOutput(SparkSession spark, String targetTable, Dataset<Row> queryResult, Map<String, CreateTableParser.SqlParserResult> preDealSinkMap) throws StreamingQueryException {
 
         String type = preDealSinkMap.get(targetTable).getPropMap().get("type").toString();
         String outputName = DtStringUtil.upperCaseFirstChar(type.toLowerCase()) + "Output";
         BaseOuput sinkByClass = getSinkByClass(outputName);
         StreamingQuery process = sinkByClass.process(spark, queryResult, preDealSinkMap.get(targetTable));
+
+
+        //查看所有的查询id
+//        StreamingQueryManager streamingQueryManager = spark.sessionState().streamingQueryManager();
+////        StreamingQuery[] active = streamingQueryManager.active();
+////        System.out.println("all query id ");
+////        for (StreamingQuery query : active) {
+////            System.out.println(query.id());
+////            streamingQueryManager.notifyQueryTermination(query);
+////            streamingQueryManager.awaitAnyTermination();
+////            System.out.println(query.status().prettyJson());
+////        }
+
         return process;
     }
 
 
-    public static Dataset<Row> getDatasetWithWindow(Dataset<Row> transDataSet, String windowType, Map<String, Object> proMap) {
+    public static Dataset<Row> getDatasetWithWindow(Dataset<Row> transDataSet, WindowType windowType, Map<String, Object> proMap) {
 
         Dataset<Row> windowData = null;
         String timeField = "timestamp";
@@ -206,9 +240,8 @@ public class SparkUtil {
             waterMarkData = transDataSet;
         }
         //waterMarkData.printSchema();
-        if (windowType.length() > 1) {
-            String[] split = windowType.split("\\|");
-            String[] splitTime = split[1].split(",");
+        if (windowType!=null) {
+            String[] splitTime = windowType.getWindow().split(",");
             String windowDuration = "5 seconds";
             String slideDuration = "5 seconds";
             if (splitTime.length == 1) {
@@ -220,7 +253,7 @@ public class SparkUtil {
             } else {
                 throw new RuntimeException("window的配置的长度好像有点问题呦");
             }
-            switch (split[0]) {
+            switch (windowType.getType()) {
                 case "event":
                     windowData = waterMarkData.withColumn("eventwindow", functions.window(waterMarkData.col(timeField), windowDuration, slideDuration));
                     break;
@@ -238,8 +271,7 @@ public class SparkUtil {
         return windowData;
     }
 
-    public static String getWindowType(Map<String, Object> proMap) {
-        String windowType = "";
+    public static WindowType getWindowType(Map<String, Object> proMap) {
         String proWindow = "";
         String eventWindow = "";
         try {
@@ -256,12 +288,109 @@ public class SparkUtil {
         } catch (Exception e) {
 
         }
+
+
         if (proWindow.length() > 1) {
-            windowType = "process|" + proWindow;
+            return new WindowType("process",proWindow);
         }
         if (eventWindow.length() > 1) {
-            windowType = "event|" + eventWindow;
+            return new WindowType("event",eventWindow);
         }
-        return windowType;
+        return null;
     }
+
+    public static void refresh(String sql) throws Exception {
+
+        SqlParser.sqlTree.clear();
+
+        SqlParser.parseSql(sql);
+//.sessionState.streamingQueryManager.startQuery
+        //spark.sessionState().streamingQueryManager().resetTerminated();
+//        StreamingQueryManager streamingQueryManager = spark.sessionState().streamingQueryManager();
+//
+//        StreamingQuery[] active = streamingQueryManager.active();
+//        for (StreamingQuery query : active) {
+//            System.out.println(query.id());
+//            System.out.println(query.name());
+//            streamingQueryManager.notifyQueryTermination(query);
+//            System.out.println(query.status().prettyJson());
+//            Seq<Source> sourcesByName = spark.sparkContext().env().metricsSystem().getSourcesByName(query.id().toString());
+//
+//            //sourcesByName.toStream()
+//            //spark.sparkContext().env.metricsSystem.removeSource(streamMetrics);
+//            Source head = sourcesByName.head();
+//            System.out.println(head.sourceName());
+//            System.out.println(head.metricRegistry().getNames().first());
+//
+//            spark.sparkContext().env().metricsSystem().removeSource(sourcesByName.head());
+//        }
+//
+        //SparkSession newsSparkSession = spark.newSession();
+        //spark.stop();
+
+        //spark.sessionState().streamingQueryManager().notifyQueryTermination();
+        //spark.close();
+        //尝试通过删除spark中的同名的table、刷新表、drop视图来实现动态更新——>失败  接下来尝试classload
+//        spark.sessionState().catalog().dropTable(new TableIdentifier("TESTTABLEAPPLE"),true,true);
+//        spark.sessionState().refreshTable("TESTTABLEAPPLE");
+        //boolean testtableapple = spark.sessionState().catalog().dropTempView("TESTTABLEAPPLE");
+        //System.out.println("drop:"+testtableapple);
+        //System.out.println(spark.sessionState().catalog().currentDb());
+        //System.out.println(SparkUtil.streamingQuery.lastProgress());
+        //spark.close();
+//        spark.sparkContext().cancelAllJobs();
+//        boolean testtableapple = spark.sessionState().catalog().dropTempView("TESTTABLEAPPLE");
+//        System.out.println("drop:"+testtableapple);
+//        spark.sessionState().catalog().dropTable(new TableIdentifier("TESTTABLEAPPLE"),true,true);
+        SparkUtil.parseProcessAndSink(spark, SqlParser.sqlTree);
+    }
+
+    public static void parseProcessAndSink(SparkSession spark, SqlTree sqlTree) throws Exception {
+        if(sqlTree==null){
+            SqlParser.parseSql(getDataNode(getZkclient(),"/sqlstream/sql"));
+            sqlTree = SqlParser.sqlTree;
+            //throw new RuntimeException("sqltree s是空的");
+        }
+        Map<String, Dataset<Row>> tableList = SparkUtil.getTableList(spark, sqlTree);
+
+        //List<InsertSqlParser.SqlParseResult> execSqlList = sqlTree.getExecSqlList();
+
+        InsertSqlParser.SqlParseResult sqlParseResult = sqlTree.getExecSql();
+        //获取插入语句中的 目标表
+        String targetTable = sqlParseResult.getTargetTable();
+        //获取插入语句中的相关表(先create的表)
+        Set<String> sourceTableList = sqlParseResult.getSourceTableList();
+        //表是insert sql中target的时候才要注册成表
+        //表示sql中source部分的时候要另外处理
+        //spark.sessionState().catalog().dropTable();
+        tableList.forEach((tableName, dataRow) -> {
+            //if (sourceTableList.contains(tableName)) {
+                dataRow.printSchema();
+                //spark.sessionState().refreshTable(tableName);
+            System.out.println("table:"+tableName);
+                dataRow.createOrReplaceTempView(tableName);
+
+        });
+
+        //System.out.println("exesql:"+sqlParseResult.getQuerySql());
+
+        Dataset<Row> queryResult = spark.sql(sqlParseResult.getQuerySql());
+
+        Map<String, CreateTableParser.SqlParserResult> preDealSinkMap = sqlTree.getPreDealSinkMap();
+
+        streamingQuery = SparkUtil.tableOutput(spark, targetTable, queryResult, preDealSinkMap);
+    }
+
+    public static SparkSession getSparkSession(){
+        //SparkSession spark =
+        spark = SparkSession
+                .builder()
+                .config("spark.default.parallelism", "2")
+                .config("spark.sql.shuffle.partitions", "2")
+                .appName("SparkInSql")
+                .master("local[2]")
+                .getOrCreate();;
+        return spark;
+    }
+
 }

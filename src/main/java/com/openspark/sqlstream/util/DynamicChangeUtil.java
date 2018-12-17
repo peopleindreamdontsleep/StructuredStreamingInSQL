@@ -1,11 +1,13 @@
 package com.openspark.sqlstream.util;
 
+import com.openspark.sqlstream.parser.SqlParser;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
@@ -14,27 +16,9 @@ import java.util.concurrent.CountDownLatch;
 
 public class DynamicChangeUtil implements Watcher {
 
-    private static CountDownLatch countDownLatch = new CountDownLatch(1);
-    public final static String[] zkData = {""};
+    public static String sqlStr = "";
 
-    public static void putDataInZk(CuratorFramework client, String sql, String group, String sqlPath) throws Exception {
-        ZooKeeper zooKeeper = new ZooKeeper(ConfigConstrant.ZOOKEPER_ADRESS, 5000, new DynamicChangeUtil());
-        countDownLatch.await();
-        String zkPath = "/" + group + "/" + sqlPath;
-        Stat groupExists = zooKeeper.exists("/" + group, new DynamicChangeUtil());
-        if (groupExists == null) {
-            zooKeeper.create("/" + group, null,
-                    ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        }
-        Stat pathExists = zooKeeper.exists("/" + group + "/" + sqlPath, new DynamicChangeUtil());
-        if (pathExists == null) {
-            zooKeeper.create("/" + group + "/" + sqlPath, sql.getBytes(),
-                    ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        } else {
-            zooKeeper.close();
-            setDataNode(client, "/" + group + "/" + sqlPath, sql);
-        }
-    }
+    private static CountDownLatch countDownLatch = new CountDownLatch(1);
 
     @Override
     public void process(WatchedEvent watchedEvent) {
@@ -49,27 +33,30 @@ public class DynamicChangeUtil implements Watcher {
         treeCache.getListenable().addListener(new TreeCacheListener() {
             @Override
             public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
+                String zkData = "";
                 ChildData data = event.getData();
+                TreeCacheEvent.Type eventType = event.getType();
                 if (data != null) {
-                    switch (event.getType()) {
-                        case NODE_ADDED:
-                            System.out.println("NODE_ADDED");
-                            zkData[0] = new String(data.getData());
-                            break;
-                        case NODE_REMOVED:
-                            System.out.println("NODE_REMOVED");
-                            zkData[0] = new String(data.getData());
-                            break;
-                        case NODE_UPDATED:
-                            System.out.println("NODE_UPDATED");
-                            zkData[0] = new String(data.getData());
-                            break;
-
-                        default:
-                            break;
+                    if (eventType == TreeCacheEvent.Type.NODE_ADDED) {
+                        System.out.println("NODE_ADDED");
+                        if(!zkData.trim().equals(""))
+                            zkData = new String(data.getData());
+                            //SparkUtil.refresh(zkData);
                     }
+                    else if (eventType == TreeCacheEvent.Type.NODE_UPDATED) {
+                        System.out.println("SQL更新了呦");
+                        zkData = new String(data.getData());
+                        //System.out.println(zkData);
+                        SparkUtil.refresh(zkData);
+                    }
+                    else if (eventType == TreeCacheEvent.Type.NODE_REMOVED) {
+                        System.out.println("NODE_REMOVED");
+                        zkData = new String(data.getData());
+                    }
+
+
                 } else {
-                    System.out.println("data is null : " + event.getType());
+                    System.out.println("can get " + event.getType());
                 }
             }
         });
@@ -86,12 +73,16 @@ public class DynamicChangeUtil implements Watcher {
         return new String(datas);
     }
 
-    private static void setDataNode(CuratorFramework client, String path, String message) throws Exception {
-        Stat stat = client.checkExists().forPath(path);
-        if (stat == null) {
-            throw new RuntimeException("zk的路径不存在" + path);
-        }
-        client.setData().forPath(path, message.getBytes());
+    public static void getValue(String value){
+        sqlStr = value;
+    }
+
+    public static CuratorFramework getZkclient() throws InterruptedException {
+        CuratorFramework zkClient = CuratorFrameworkFactory.newClient("172.18.250.93:2181", 5000, 5000,
+                new ExponentialBackoffRetry(3, 1000));
+        zkClient.start();
+        zkClient.blockUntilConnected();
+        return zkClient;
     }
 
     public static CuratorFramework getClient(String group) {
@@ -104,5 +95,18 @@ public class DynamicChangeUtil implements Watcher {
                 retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000)).build();
         client.start();
         return client;
+    }
+
+    public static void main(String[] args) throws Exception{
+        CuratorFramework zkClient = CuratorFrameworkFactory.newClient("172.18.250.93:2181",
+                new ExponentialBackoffRetry(3, 1000));
+        zkClient.start();
+        zkClient.blockUntilConnected();
+        String sqlData = getDataNode(zkClient,"/sqlstream/sql");
+        System.out.println("sqlData "+sqlData);
+        DynamicChangeUtil.CuratorWatcher(zkClient,"sqlstream/sql");
+        sqlData = sqlStr;
+        System.out.println("sqlStr"+sqlData);
+        Thread.sleep(Long.MAX_VALUE);
     }
 }

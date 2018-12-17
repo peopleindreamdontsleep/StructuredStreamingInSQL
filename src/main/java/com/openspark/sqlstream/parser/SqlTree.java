@@ -1,12 +1,10 @@
 package com.openspark.sqlstream.parser;
 
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.openspark.sqlstream.util.DtStringUtil.newArrayList;
+import static com.openspark.sqlstream.util.DtStringUtil.newHashSet;
 
 /**
  * 解析sql获得的对象结构
@@ -14,7 +12,7 @@ import static com.openspark.sqlstream.util.DtStringUtil.newArrayList;
 
 public class SqlTree {
 
-    private List<CreateFuncParser.SqlParserResult> functionList = newArrayList();
+    private Set<CreateFuncParser.SqlParserResult> functionList = newHashSet();
 
     private Map<String, CreateTableParser.SqlParserResult> preDealTableMap = new HashMap<>();
 
@@ -22,12 +20,11 @@ public class SqlTree {
 
     private Map<String, TableInfo> tableInfoMap = new LinkedHashMap();
 
-
-    private List<InsertSqlParser.SqlParseResult> execSqlList = newArrayList();
+    private Set<InsertSqlParser.SqlParseResult> execSqlList = newHashSet();
 
     private InsertSqlParser.SqlParseResult execSql;
 
-    public List<CreateFuncParser.SqlParserResult> getFunctionList() {
+    public Set<CreateFuncParser.SqlParserResult> getFunctionList() {
         return functionList;
     }
 
@@ -39,7 +36,7 @@ public class SqlTree {
         return preDealSinkMap;
     }
 
-    public List<InsertSqlParser.SqlParseResult> getExecSqlList() {
+    public Set<InsertSqlParser.SqlParseResult> getExecSqlList() {
         return execSqlList;
     }
 
@@ -73,5 +70,14 @@ public class SqlTree {
 
     public void addTableInfo(String tableName, TableInfo tableInfo) {
         tableInfoMap.put(tableName, tableInfo);
+    }
+
+    public void clear() {
+        functionList.clear();
+        preDealTableMap.clear();
+        preDealSinkMap.clear();
+        tableInfoMap.clear();
+        execSqlList.clear();
+        execSql = null;
     }
 }

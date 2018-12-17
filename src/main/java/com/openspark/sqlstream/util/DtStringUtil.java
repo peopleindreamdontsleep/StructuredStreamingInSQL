@@ -7,17 +7,12 @@ import org.apache.spark.sql.types.DataTypes;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class DtStringUtil {
-
-    private static final Pattern NO_VERSION_PATTERN = Pattern.compile("([a-zA-Z]+).*");
-
 
     public static List<String> splitIgnoreQuota(String str, char delimiter) {
         List<String> tokensList = new ArrayList<>();
@@ -61,28 +56,22 @@ public class DtStringUtil {
         return str.split(splitPatternStr);
     }
 
-    public static String replaceIgnoreQuota(String str, String oriStr, String replaceStr) {
-        String splitPatternStr = oriStr + "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)(?=(?:[^']*'[^']*')*[^']*$)";
-        return str.replaceAll(splitPatternStr, replaceStr);
-    }
 
     public static String upperCaseFirstChar(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public static String getPluginTypeWithoutVersion(String engineType) {
 
-        Matcher matcher = NO_VERSION_PATTERN.matcher(engineType);
-        if (!matcher.find()) {
-            return engineType;
-        }
-
-        return matcher.group(1);
+    public static <E> HashSet<E> newHashSet(E... elements) {
+        checkNotNull(elements);
+        HashSet<E> list = new HashSet(elements.length);
+        Collections.addAll(list, elements);
+        return list;
     }
 
-    public static <E> ArrayList<E> newArrayList(E... elements) {
+    public static <E> List<E> newArrayList(E... elements) {
         checkNotNull(elements);
-        ArrayList<E> list = new ArrayList(elements.length);
+        List<E> list = new ArrayList<>(elements.length);
         Collections.addAll(list, elements);
         return list;
     }

@@ -25,8 +25,10 @@ import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Set;
 
 import static com.openspark.sqlstream.util.DtStringUtil.newArrayList;
+import static com.openspark.sqlstream.util.DtStringUtil.newHashSet;
 import static org.apache.calcite.sql.SqlKind.IDENTIFIER;
 
 /**
@@ -116,9 +118,9 @@ public class InsertSqlParser implements IParser {
 
     public static class SqlParseResult {
 
-        private List<String> sourceTableList = newArrayList();
+        private Set<String> sourceTableList = newHashSet();
 
-        private List<String> targetTableList = newArrayList();
+        private Set<String> targetTableList = newHashSet();
 
         private String targetTable;
 
@@ -134,11 +136,11 @@ public class InsertSqlParser implements IParser {
             targetTableList.add(targetTable);
         }
 
-        public List<String> getSourceTableList() {
+        public Set<String> getSourceTableList() {
             return sourceTableList;
         }
 
-        public List<String> getTargetTableList() {
+        public Set<String> getTargetTableList() {
             return targetTableList;
         }
 

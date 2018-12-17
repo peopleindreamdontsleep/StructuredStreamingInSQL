@@ -15,6 +15,7 @@ public class KafkaInput implements BaseInput {
     Boolean isProcess = true;
 
     //生成datastream
+    //TODO 可以不加Processwindow
     @Override
     public Dataset<Row> getDataSetStream(SparkSession spark, CreateTableParser.SqlParserResult config) {
         kafkaMap = config.getPropMap();
@@ -87,7 +88,7 @@ public class KafkaInput implements BaseInput {
                     .options(options)
                     .option("includeTimestamp", true)
                     .load();
-            rowDataset = lines.selectExpr("CAST(value AS STRING)");
+            rowDataset = lines.selectExpr("CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)");
         } else {
             Dataset<Row> lines = spark
                     .readStream()

@@ -1,6 +1,7 @@
 package com.sqlsteam
 
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.streaming.StreamingQueryManager
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 object SocketStream {
@@ -17,7 +18,8 @@ object SocketStream {
       .master("local[2]")
       .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
-
+    //val managet: StreamingQueryManager = spark.sessionState.streamingQueryManager
+    //managet.active
     val socketStreamDf = spark.readStream
       .format("socket")
       .option("host", "hadoop-sh1-core1")
