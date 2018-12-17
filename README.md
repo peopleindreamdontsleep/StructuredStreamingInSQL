@@ -262,9 +262,148 @@ Batch: 2
 
 ```
 
-#### 5.改变sql语句而不用重启项目实现更新(待实现)
+#### 5.改变sql语句而不用重启项目实现更新
+##### 目前只实现了动态添加，动态删除待实现
+```shell
+kafka的配置为
+
+CREATE TABLE kafkaTable(
+    word string,
+    wordcount int
+)WITH(
+    type='kafka',
+    kafka.bootstrap.servers='dfttshowkafka001:9092',
+    processwindow='10 seconds,10 seconds',
+    watermark='10 seconds',
+    subscribe='test',
+    group='test'
+);
+
+create SINK consoleOut(
+)WITH(
+    type='console',
+    outputmode='complete',
+    process='10s'
+);
+
+insert into consoleOut select word,count(*) from kafkaTable group by word;
+
+输入：
+a
+a
+cc
+c
+c
+cc
+输出：
+root
+ |-- WORD: string (nullable = true)
+ |-- WORDCOUNT: integer (nullable = true)
+ |-- timestamp: timestamp (nullable = true)
+ |-- processwindow: struct (nullable = false)
+ |    |-- start: timestamp (nullable = true)
+ |    |-- end: timestamp (nullable = true)
+
+table:KAFKATABLE
+-------------------------------------------
+Batch: 0
+-------------------------------------------
++----+--------+
+|WORD|count(1)|
++----+--------+
++----+--------+
+-------------------------------------------
+Batch: 1
+-------------------------------------------
++----+--------+
+|WORD|count(1)|
++----+--------+
+|a   |2       |
+|c   |2       |
+|cc  |2       |
++----+--------+
+
+增加一个配置or修改当前配置，都默认会是添加操作，对当前的没影响
+
+CREATE TABLE kafkaTable(
+    word string
+)WITH(
+    type='kafka',
+    kafka.bootstrap.servers='dfttshowkafka001:9092',
+    processwindow='10 seconds,10 seconds',
+    watermark='10 seconds',
+    subscribe='test',
+    group='test'
+);
+
+create SINK consoleOut(
+)WITH(
+    type='console',
+    outputmode='complete',
+    process='10s'
+);
+
+insert into consoleOut select processwindow,word,count(*) from kafkaTable group by word,processwindow;
+
+和上面相比，增加了一个processwindow
+
+运行一下ZkNodeCRUD，更新配置，输出
+
+SQL更新了呦
+分隔符未配置，默认为逗号
+root
+ |-- WORD: string (nullable = true)
+ |-- timestamp: timestamp (nullable = true)
+ |-- processwindow: struct (nullable = false)
+ |    |-- start: timestamp (nullable = true)
+ |    |-- end: timestamp (nullable = true)
+
+table:KAFKATABLE
+-------------------------------------------
+Batch: 0
+-------------------------------------------
++-------------+----+--------+
+|PROCESSWINDOW|WORD|count(1)|
++-------------+----+--------+
++-------------+----+--------+
+
+
+继续输入：
+a
+a
+cc
+c
+c
+cc
+输出：
+-------------------------------------------
+Batch: 2
+-------------------------------------------
++----+--------+
+|WORD|count(1)|
++----+--------+
+|c   |4       |
+|a   |4       |
+|cc  |4       |
++----+--------+
+-------------------------------------------
+Batch: 1
+-------------------------------------------
++------------------------------------------+----+--------+
+|PROCESSWINDOW                             |WORD|count(1)|
++------------------------------------------+----+--------+
+|[2018-12-17 16:45:10, 2018-12-17 16:45:20]|a   |2       |
+|[2018-12-17 16:45:10, 2018-12-17 16:45:20]|c   |2       |
+|[2018-12-17 16:45:10, 2018-12-17 16:45:20]|cc  |2       |
++------------------------------------------+----+--------+
+
+两个窗口都实现了更新
+
+```
+##### 对于如何将当前的SQL文件覆盖之前运行的，正在查看sparksession、sparkcontext、StreamingQueryManager等部分源码，希望能找到答案，也做过很多尝试，但还是没完成，希望有思路的小伙伴可以一起探讨一下。
 
 #### 6.配置中加入spark的配置参数实现调优(待实现)
 
 #### 7.自定义UDF函数(待实现)
+
 
