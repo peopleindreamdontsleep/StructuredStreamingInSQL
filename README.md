@@ -1,8 +1,6 @@
-# StructuredStreamingInSQL
-### 代码整体的结构参考开源项目 [waterdrop](https://github.com/InterestingLab/waterdrop)  
-### 代码中SQL文件解析的部分代码来源于开源项目[flinkStreamSQL](https://github.com/DTStack/flinkStreamSQL)
-Timestamp 类型格式 2018-12-07 16:34:31
 ### 需要的配置只有一个sql文件
+### 代码整体的结构参考开源项目 [waterdrop](https://github.com/InterestingLab/waterdrop)
+### 代码中SQL文件解析的部分参考开源项目[flinkStreamSQL](https://github.com/DTStack/flinkStreamSQL)
 #### 1.实现socket输入 console输出
 配置：
 ```shell
@@ -32,7 +30,7 @@ insert into console select word,count(*) from SocketTable group by word;
 
 
 ```shell
-输入： 
+输入：
 a 2
 a 2
 输出：
@@ -216,7 +214,7 @@ root
  |-- eventwindow: struct (nullable = true)
  |    |-- start: timestamp (nullable = true)
  |    |-- end: timestamp (nullable = true)
- 
+
 输入数据
 2018-12-07 16:36:12,a
 2018-12-07 16:36:22,a
@@ -405,5 +403,4 @@ Batch: 1
 #### 6.配置中加入spark的配置参数实现调优(待实现)
 
 #### 7.自定义UDF函数(待实现)
-
 
