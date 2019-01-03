@@ -12,56 +12,53 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.execution.streaming.state.HDFSBackedStateStoreProvider;
 import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.StreamingQueryListener;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.openspark.sqlstream.util.DtStringUtil.readToString;
 import static com.openspark.sqlstream.util.DynamicChangeUtil.getDataNode;
 import static com.openspark.sqlstream.util.DynamicChangeUtil.getZkclient;
 
 public class SparkInSql {
-    public static SqlTree sqlTree;
+    //public static SqlTree sqlTree;
+
     public static void main(String[] args) throws Exception {
-        //TODO 传入的参数进行解析
-        SparkSession spark = SparkUtil.getSparkSession();
-        spark.sparkContext().setLogLevel("WARN");
-        DynamicChangeUtil.CuratorWatcher(getZkclient(),"sqlstream/sql");
-        SparkUtil.parseProcessAndSink(spark, SqlParser.sqlTree);
 
-        SparkUtil.streamingQuery.awaitTermination();
-        //String sqlPath = "F:\\E\\wordspace\\sqlstream\\conf\\csvsqlstream";
-        //String sql = readToString(sqlPath);
-        //String sql = getDataNode(getZkclient(),"/sqlstream/sql");
-        //SqlParser.sqlTree = sql;
+        while (true){
+            if(!SparkUtil.isAdd){
+                //TODO 传入的参数进行解析
+                SparkSession spark = SparkUtil.getSparkSession();
+                spark.sparkContext().setLogLevel("WARN");
 
-        //sql = DynamicChangeUtil.sqlStr;
-        //SqlTree sqlTree = SqlParser.parseSql(sql);
+                DynamicChangeUtil.CuratorWatcher(getZkclient(),"sqlstream/sql");
+                SparkUtil.parseProcessAndSink(spark, SqlParser.sqlTree);
 
-//        Map<String, Dataset<Row>> tableList = SparkUtil.getTableList(spark, SqlParser.sqlTree);
-//
-//        //List<InsertSqlParser.SqlParseResult> execSqlList = sqlTree.getExecSqlList();
-//
-//        InsertSqlParser.SqlParseResult sqlParseResult = SqlParser.sqlTree.getExecSql();
-//        //获取插入语句中的 目标表
-//        String targetTable = sqlParseResult.getTargetTable();
-//        //获取插入语句中的相关表(先create的表)
-//        List<String> sourceTableList = sqlParseResult.getSourceTableList();
-//        //表是insert sql中target的时候才要注册成表
-//        //表示sql中source部分的时候要另外处理
-//        tableList.forEach((tableName, dataRow) -> {
-//            if (sourceTableList.contains(tableName)) {
-//                dataRow.printSchema();
-//                dataRow.createOrReplaceTempView(tableName);
-//            }
-//        });
-//
-//        Dataset<Row> queryResult = spark.sql(sqlParseResult.getQuerySql());
-//
-//        Map<String, CreateTableParser.SqlParserResult> preDealSinkMap = SqlParser.sqlTree.getPreDealSinkMap();
+                spark.streams().addListener(new StreamingQueryListener() {
+                    @Override
+                    public void onQueryStarted(QueryStartedEvent queryStarted) {
+                        System.out.println("Query started: " + queryStarted.id());
+                    }
+                    @Override
+                    public void onQueryTerminated(QueryTerminatedEvent queryTerminated) {
+                        System.out.println("Query terminated: " + queryTerminated.id());
+                    }
+                    @Override
+                    public void onQueryProgress(QueryProgressEvent queryProgress) {
 
+                        System.out.println("Query made progress: " + queryProgress.progress().id());
+                        int length = spark.sessionState().streamingQueryManager().active().length;
+                        System.out.println("active query length:"+length);
 
-
+                    }
+                });
+                SparkUtil.streamingQuery.awaitTermination();
+            }
+        }
     }
 }

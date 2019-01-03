@@ -22,6 +22,7 @@ object SocketStream {
     //managet.active
     val socketStreamDf = spark.readStream
       .format("socket")
+
       .option("host", "hadoop-sh1-core1")
       .option("port", 9998)
       .load()
@@ -39,10 +40,11 @@ object SocketStream {
       StructType(
         schemaString.split(" ").map(fieldName => StructField(fieldName, StringType, true)))
 
-    val schemaDf = spark.createDataFrame(socketStreamDf.rdd, schema)
+    //val schemaDf = spark.createDataFrame(socketStreamDf.rdd, schema)
+    socketStreamDf.count()
+    //socketStreamDf
 
-
-    schemaDf.printSchema()
+    //schemaDf.printSchema()
     val wordCount = spark.sql("select word,sum(wordvalue) from table group by word")
 
     val query = wordCount.writeStream

@@ -42,11 +42,13 @@ public class KafkaOutput implements BaseOuput {
                     .outputMode(propMap.get("outputmode").toString())
                     .format("console")
                     .trigger(ProcessingTime(process))
+                    .queryName("kafkatest")
                     .start();
         } else {
             query = dataset.writeStream()
                     .outputMode(propMap.get("outputmode").toString())
                     .format("console")
+                    .queryName("kafkatest")
                     .start();
         }
 

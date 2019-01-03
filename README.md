@@ -398,9 +398,150 @@ Batch: 1
 两个窗口都实现了更新
 
 ```
-##### 对于如何将当前的SQL文件覆盖之前运行的，正在查看sparksession、sparkcontext、StreamingQueryManager等部分源码，希望能找到答案，也做过很多尝试，但还是没完成，希望有思路的小伙伴可以一起探讨一下。
+#### 实现动态更新 新版(直接替换，无需重启)。
+```shell
+CREATE TABLE kafkaTable(
+    word string
+)WITH(
+    type='kafka',
+    kafka.bootstrap.servers='dfttshowkafka001:9092',
+    processwindow='10 seconds,10 seconds',
+    watermark='10 seconds',
+    subscribe='test',
+    group='test'
+);
+
+create SINK consoleOut(
+)WITH(
+    type='console',
+    outputmode='complete',
+    process='10s'
+);
+
+insert into consoleOut select word,count(*) from kafkaTable group by word,processwindow;
+
+
+启动
+分隔符未配置，默认为逗号
+root
+ |-- WORD: string (nullable = true)
+ |-- timestamp: timestamp (nullable = true)
+ |-- processwindow: struct (nullable = false)
+ |    |-- start: timestamp (nullable = true)
+ |    |-- end: timestamp (nullable = true)
+
+table:KAFKATABLE
+first add :e753351e-9777-448e-b649-704e59c11755
+-------------------------------------------
+Batch: 0
+-------------------------------------------
++----+--------+
+|WORD|count(1)|
++----+--------+
++----+--------+
+
+Query made progress: e753351e-9777-448e-b649-704e59c11755
+active query length:1
+
+输入数据
+-------------------------------------------
+Batch: 1
+-------------------------------------------
++----+--------+
+|WORD|count(1)|
++----+--------+
+|c   |7       |
+|a   |3       |
++----+--------+
+
+替换SQL
+CREATE TABLE kafkaTable(
+    word string
+)WITH(
+    type='kafka',
+    kafka.bootstrap.servers='dfttshowkafka001:9092',
+    processwindow='10 seconds,10 seconds',
+    watermark='10 seconds',
+    subscribe='test',
+    group='test'
+);
+
+create SINK consoleOut(
+)WITH(
+    type='console',
+    outputmode='complete',
+    process='10s'
+);
+
+insert into consoleOut select processwindow,word,count(*) from kafkaTable group by word,processwindow;
+
+sql中增加一个processwindow显示
+
+输入数据
+
+SQL更新了呦
+分隔符未配置，默认为逗号
+root
+ |-- WORD: string (nullable = true)
+ |-- timestamp: timestamp (nullable = true)
+ |-- processwindow: struct (nullable = false)
+ |    |-- start: timestamp (nullable = true)
+ |    |-- end: timestamp (nullable = true)
+
+table:KAFKATABLE
+Query started: 549cf074-6cf9-4934-b57d-0932230320e8
+zhiqian :e753351e-9777-448e-b649-704e59c11755
+new de  :549cf074-6cf9-4934-b57d-0932230320e8
+Query terminated: e753351e-9777-448e-b649-704e59c11755
+-------------------------------------------
+Batch: 0
+-------------------------------------------
++-------------+----+--------+
+|PROCESSWINDOW|WORD|count(1)|
++-------------+----+--------+
++-------------+----+--------+
+
+Query made progress: 549cf074-6cf9-4934-b57d-0932230320e8
+active query length:1
+-------------------------------------------
+Batch: 1
+-------------------------------------------
++------------------------------------------+----+--------+
+|PROCESSWINDOW                             |WORD|count(1)|
++------------------------------------------+----+--------+
+|[2019-01-03 14:49:30, 2019-01-03 14:49:40]|a   |3       |
+|[2019-01-03 14:49:30, 2019-01-03 14:49:40]|c   |8       |
++------------------------------------------+----+--------+
+
+Query made progress: 549cf074-6cf9-4934-b57d-0932230320e8
+active query length:1
+Query made progress: 549cf074-6cf9-4934-b57d-0932230320e8
+active query length:1
+Query made progress: 549cf074-6cf9-4934-b57d-0932230320e8
+active query length:1
+-------------------------------------------
+Batch: 2
+-------------------------------------------
++------------------------------------------+----+--------+
+|PROCESSWINDOW                             |WORD|count(1)|
++------------------------------------------+----+--------+
+|[2019-01-03 14:49:50, 2019-01-03 14:50:00]|a   |3       |
+|[2019-01-03 14:49:30, 2019-01-03 14:49:40]|a   |3       |
+|[2019-01-03 14:49:50, 2019-01-03 14:50:00]|c   |7       |
+|[2019-01-03 14:50:00, 2019-01-03 14:50:10]|c   |1       |
+|[2019-01-03 14:49:30, 2019-01-03 14:49:40]|c   |8       |
++------------------------------------------+----+--------+
+
+jobid实现了更新，之前的窗口也不见了，解决了前面只能添加，不能删除的bug
+```
 
 #### 6.配置中加入spark的配置参数实现调优(待实现)
 
 #### 7.自定义UDF函数(待实现)
+
+#### 8.监控(待实现)
+
+#### 9.压测(待实现)
+
+#### 10.代码结构完善，log调整
 

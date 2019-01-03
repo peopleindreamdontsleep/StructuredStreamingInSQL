@@ -60,15 +60,15 @@ public class EventTimeJsonTest {
         };
         StructType type = new StructType(fields);
 
-        Dataset<Row> words = lines
-                .as(Encoders.tuple(Encoders.STRING(), Encoders.TIMESTAMP()))
-                .mapPartitions(new MapPartitionsFunction<Tuple2<String, Timestamp>, Row>() {
-                    @Override
-                    public Iterator<Row> call(Iterator<Tuple2<String, Timestamp>> input) throws Exception {
-
-                        return null;
-                    }
-                }, Encoders.kryo(Row.class));
+//        Dataset<Row> words = lines
+//                .as(Encoders.tuple(Encoders.STRING(), Encoders.TIMESTAMP()))
+//                .mapPartitions(new MapPartitionsFunction<Tuple2<String, Timestamp>, Row>() {
+//                    @Override
+//                    public Iterator<Row> call(Iterator<Tuple2<String, Timestamp>> input) throws Exception {
+//
+//                        return null;
+//                    }
+//                }, Encoders.kryo(Row.class));
 
         Dataset<String> words1 = lines
                 .as(Encoders.STRING())

@@ -41,6 +41,8 @@ public class SparkUtil {
     static String sinkBasePackage = "com.openspark.sqlstream.sink.";
     public static StreamingQuery streamingQuery = null;
     static SparkSession spark = null;
+    public static Boolean isAdd = false;
+    public static UUID currentRunId = null;
 
     //将input的内容注册成带schame的dataset
     public static Dataset<Row> createDataSet(Dataset<Row> lineRow, String fieldsInfoStr, String lineDelimit, Map<String, Object> proMap) {
@@ -203,18 +205,23 @@ public class SparkUtil {
         String outputName = DtStringUtil.upperCaseFirstChar(type.toLowerCase()) + "Output";
         BaseOuput sinkByClass = getSinkByClass(outputName);
         StreamingQuery process = sinkByClass.process(spark, queryResult, preDealSinkMap.get(targetTable));
-
-
-        //查看所有的查询id
-//        StreamingQueryManager streamingQueryManager = spark.sessionState().streamingQueryManager();
-////        StreamingQuery[] active = streamingQueryManager.active();
-////        System.out.println("all query id ");
-////        for (StreamingQuery query : active) {
-////            System.out.println(query.id());
-////            streamingQueryManager.notifyQueryTermination(query);
-////            streamingQueryManager.awaitAnyTermination();
-////            System.out.println(query.status().prettyJson());
-////        }
+        //StreamingQueryManager streamingQueryManager = spark.sessionState().streamingQueryManager();
+        if(currentRunId == null) {
+            currentRunId = process.id();
+            System.out.println("first add :" + currentRunId.toString());
+        }
+        else if(!currentRunId.toString().equals(process.id().toString())){
+            System.out.println("before jobid:"+currentRunId.toString());
+            System.out.println("new jobid :"+process.id().toString());
+            try {
+                StreamingQuery streamingQuery = spark.sessionState().streamingQueryManager().get(currentRunId);
+                //spark.sessionState().streamingQueryManager().remove(streamingQuery);
+                streamingQuery.stop();
+            }catch (Exception e){
+                currentRunId = process.id();
+                System.out.println("这个job的id不存在呦");
+            }
+        }
 
         return process;
     }
@@ -302,46 +309,9 @@ public class SparkUtil {
     public static void refresh(String sql) throws Exception {
 
         SqlParser.sqlTree.clear();
-
         SqlParser.parseSql(sql);
-//.sessionState.streamingQueryManager.startQuery
-        //spark.sessionState().streamingQueryManager().resetTerminated();
-//        StreamingQueryManager streamingQueryManager = spark.sessionState().streamingQueryManager();
-//
-//        StreamingQuery[] active = streamingQueryManager.active();
-//        for (StreamingQuery query : active) {
-//            System.out.println(query.id());
-//            System.out.println(query.name());
-//            streamingQueryManager.notifyQueryTermination(query);
-//            System.out.println(query.status().prettyJson());
-//            Seq<Source> sourcesByName = spark.sparkContext().env().metricsSystem().getSourcesByName(query.id().toString());
-//
-//            //sourcesByName.toStream()
-//            //spark.sparkContext().env.metricsSystem.removeSource(streamMetrics);
-//            Source head = sourcesByName.head();
-//            System.out.println(head.sourceName());
-//            System.out.println(head.metricRegistry().getNames().first());
-//
-//            spark.sparkContext().env().metricsSystem().removeSource(sourcesByName.head());
-//        }
-//
-        //SparkSession newsSparkSession = spark.newSession();
-        //spark.stop();
+        isAdd = true;
 
-        //spark.sessionState().streamingQueryManager().notifyQueryTermination();
-        //spark.close();
-        //尝试通过删除spark中的同名的table、刷新表、drop视图来实现动态更新——>失败  接下来尝试classload
-//        spark.sessionState().catalog().dropTable(new TableIdentifier("TESTTABLEAPPLE"),true,true);
-//        spark.sessionState().refreshTable("TESTTABLEAPPLE");
-        //boolean testtableapple = spark.sessionState().catalog().dropTempView("TESTTABLEAPPLE");
-        //System.out.println("drop:"+testtableapple);
-        //System.out.println(spark.sessionState().catalog().currentDb());
-        //System.out.println(SparkUtil.streamingQuery.lastProgress());
-        //spark.close();
-//        spark.sparkContext().cancelAllJobs();
-//        boolean testtableapple = spark.sessionState().catalog().dropTempView("TESTTABLEAPPLE");
-//        System.out.println("drop:"+testtableapple);
-//        spark.sessionState().catalog().dropTable(new TableIdentifier("TESTTABLEAPPLE"),true,true);
         SparkUtil.parseProcessAndSink(spark, SqlParser.sqlTree);
     }
 
@@ -371,8 +341,6 @@ public class SparkUtil {
                 dataRow.createOrReplaceTempView(tableName);
 
         });
-
-        //System.out.println("exesql:"+sqlParseResult.getQuerySql());
 
         Dataset<Row> queryResult = spark.sql(sqlParseResult.getQuerySql());
 

@@ -45,8 +45,8 @@ public class SocketInputTest {
                 .readStream()
                 .format("socket")
                 .option("sep", " ")
-                .option("host", "hadoop-sh1-core1")
-                .option("port", 9998)
+                .option("host", "106.14.133.121")
+                .option("port", 8888)
                 .load();
 
         List<String> field = new ArrayList<>();
@@ -56,7 +56,7 @@ public class SocketInputTest {
 
         MetadataBuilder b = new MetadataBuilder();
         StructField[] fields = {
-                new StructField("name", DataTypes.IntegerType, true, b.build()),
+                new StructField("name", DataTypes.StringType, true, b.build()),
                 new StructField("age", DataTypes.IntegerType, true, b.build()),
         };
         StructType type = new StructType(fields);
@@ -93,7 +93,8 @@ public class SocketInputTest {
         d2.printSchema();
         d2.createOrReplaceTempView("table");
         Dataset<Row> wordCounts = spark.sql("select name,sum(age) from table group by name");
-
+        //wordCounts.count();
+        //wordCounts.javaRDD();
         StreamingQuery query = wordCounts.writeStream()
                 .format("console")
                 .outputMode("complete")

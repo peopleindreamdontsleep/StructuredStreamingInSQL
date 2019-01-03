@@ -20,7 +20,7 @@ public class KafkaInputTest {
                 .master("local[2]")
                 .getOrCreate();
         spark.sparkContext().setLogLevel("WARN");
-        StructType userSchema = new StructType().add("word", "string").add("wordcount", "integer");
+        //StructType userSchema = new StructType().add("word", "string").add("wordcount", "integer");
         Dataset<Row> lines = spark
                 .readStream()
                 .format("kafka")
@@ -38,6 +38,7 @@ public class KafkaInputTest {
                 .outputMode("complete")
                 .trigger(ProcessingTime("2 seconds"))
                 .start();
+
 
         query.awaitTermination();
 

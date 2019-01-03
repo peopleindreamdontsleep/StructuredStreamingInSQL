@@ -27,7 +27,8 @@ public class CsvInputTest {
                 .schema(userSchema)
                 // Specify schema of the csv files  是个文件目录
                 .csv("F:\\E\\wordspace\\sqlstream\\filepath");
-
+        // Returns True for DataFrames that have streaming sources
+        System.out.println(csvDF.isStreaming());
         //csvDF.printSchema();
         //Dataset<Row> wordCounts = spark.sql("select name,sum(age) from table group by name");
 
