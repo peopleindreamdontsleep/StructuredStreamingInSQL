@@ -29,7 +29,7 @@ public class CreateTableParser implements IParser {
             String tableName = matcher.group(1).toUpperCase();
             String fieldsInfoStr = matcher.group(2);
             String propsStr = matcher.group(3);
-            Map<String, Object> props = parseProp(propsStr);
+            Map<String, Object> props = DtStringUtil.parseProp(propsStr);
 
             SqlParserResult result = new SqlParserResult();
             result.setTableName(tableName);
@@ -38,19 +38,6 @@ public class CreateTableParser implements IParser {
 
             sqlTree.addPreDealTableInfo(tableName, result);
         }
-    }
-
-    private Map parseProp(String propsStr) {
-        String[] strs = propsStr.trim().split("'\\s*,");
-        Map<String, Object> propMap = new HashMap<>();
-        for (int i = 0; i < strs.length; i++) {
-            List<String> ss = DtStringUtil.splitIgnoreQuota(strs[i], '=');
-            String key = ss.get(0).trim();
-            String value = ss.get(1).trim().replaceAll("'", "").trim();
-            propMap.put(key, value);
-        }
-
-        return propMap;
     }
 
     public static class SqlParserResult {

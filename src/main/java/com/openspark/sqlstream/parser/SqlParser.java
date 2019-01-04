@@ -18,7 +18,7 @@ public class SqlParser {
     public static SqlTree sqlTree;
 
     private static List<IParser> sqlParserList = newArrayList(CreateFuncParser.newInstance(),
-            CreateTableParser.newInstance(), InsertSqlParser.newInstance(), CreateSinkParser.newInstance());
+            CreateTableParser.newInstance(), InsertSqlParser.newInstance(), CreateSinkParser.newInstance(),CreateEnvParser.newInstance());
 
     /**
      * flink support sql syntax

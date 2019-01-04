@@ -22,7 +22,7 @@ public class ZkNodeCRUD {
             zkClient.start();
             zkClient.blockUntilConnected();
             //String sqlPath = "F:\\E\\wordspace\\sqlstream\\conf\\csvsqlstream";
-            String sqlPath = "F:\\E\\wordspace\\sqlstream\\conf\\sqlstream";
+            String sqlPath = "F:\\E\\wordspace\\sqlstream\\conf\\socketprostream";
             String sql = readToString(sqlPath);
             zkClient.setData().forPath("/sqlstream/sql", sql.getBytes("UTF-8"));
         }

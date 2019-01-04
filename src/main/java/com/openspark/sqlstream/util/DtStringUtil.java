@@ -194,6 +194,25 @@ public class DtStringUtil {
         throw new RuntimeException("字符串" + str + "不能转化为" + filedType + " 类型");
     }
 
+    public static Map parseProp(String propsStr) {
+        String[] strs = propsStr.trim().split("'\\s*,");
+        Map<String, Object> propMap = new HashMap<>();
+        for (int i = 0; i < strs.length; i++) {
+            List<String> ss = DtStringUtil.splitIgnoreQuota(strs[i], '=');
+            String key = ss.get(0).trim();
+            String value = ss.get(1).trim().replaceAll("'", "").trim();
+            propMap.put(key, value);
+        }
+
+        return propMap;
+    }
+
+    public static String getAppName(String appInfo){
+        List<String> ss = DtStringUtil.splitIgnoreQuota(appInfo.trim(), '=');
+        String appName = ss.get(1).trim().replaceAll("'", "").trim();
+        return appName;
+    }
+
     public static String converStrToTime(String inStr) {
         Pattern p = Pattern.compile("[A-Za-z]+$");
         Matcher m = p.matcher(inStr);

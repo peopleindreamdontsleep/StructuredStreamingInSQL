@@ -18,18 +18,34 @@ public class SqlTree {
 
     private Map<String, CreateTableParser.SqlParserResult> preDealSinkMap = new HashMap<>();
 
+    private Map<String, Object> preDealSparkEnvMap = new HashMap<>();
+
     private Map<String, TableInfo> tableInfoMap = new LinkedHashMap();
 
     private Set<InsertSqlParser.SqlParseResult> execSqlList = newHashSet();
 
     private InsertSqlParser.SqlParseResult execSql;
 
+    private String appInfo;
+
     public Set<CreateFuncParser.SqlParserResult> getFunctionList() {
         return functionList;
     }
 
+    public String getAppInfo() {
+        return appInfo;
+    }
+
+    public void setAppInfo(String appInfo) {
+        this.appInfo = appInfo;
+    }
+
     public Map<String, CreateTableParser.SqlParserResult> getPreDealTableMap() {
         return preDealTableMap;
+    }
+
+    public Map<String, Object> getPreDealSparkEnvMap(){
+        return preDealSparkEnvMap;
     }
 
     public Map<String, CreateTableParser.SqlParserResult> getPreDealSinkMap() {
@@ -50,6 +66,12 @@ public class SqlTree {
 
     public void addPreDealSinkInfo(String tableName, CreateTableParser.SqlParserResult table) {
         preDealSinkMap.put(tableName, table);
+    }
+
+    public void addPreDealSparkEnvInfo(Map<String, Object> sparkEnv) {
+        sparkEnv.forEach((key,value)->{
+            preDealSparkEnvMap.put(key,value);
+        });
     }
 
     public void addExecSql(InsertSqlParser.SqlParseResult execSql) {

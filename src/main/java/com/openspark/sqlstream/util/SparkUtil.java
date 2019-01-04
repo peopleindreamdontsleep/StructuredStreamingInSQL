@@ -9,6 +9,7 @@ import com.openspark.sqlstream.sink.BaseOuput;
 import com.openspark.sqlstream.source.BaseInput;
 import net.sf.json.JSONObject;
 import org.apache.spark.ContextCleaner;
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.MapPartitionsFunction;
 import org.apache.spark.metrics.source.Source;
 import org.apache.spark.sql.*;
@@ -222,7 +223,6 @@ public class SparkUtil {
                 System.out.println("这个job的id不存在呦");
             }
         }
-
         return process;
     }
 
@@ -286,16 +286,13 @@ public class SparkUtil {
             proWindow = proMap.get("processwindow").toString();
             //判断window类型
         } catch (Exception e) {
-
         }
         try {
             //判断是event类型
             eventWindow = proMap.get("eventwindow").toString();
             //判断window类型
         } catch (Exception e) {
-
         }
-
 
         if (proWindow.length() > 1) {
             return new WindowType("process",proWindow);
@@ -311,7 +308,6 @@ public class SparkUtil {
         SqlParser.sqlTree.clear();
         SqlParser.parseSql(sql);
         isAdd = true;
-
         SparkUtil.parseProcessAndSink(spark, SqlParser.sqlTree);
     }
 
@@ -337,7 +333,6 @@ public class SparkUtil {
             //if (sourceTableList.contains(tableName)) {
                 dataRow.printSchema();
                 //spark.sessionState().refreshTable(tableName);
-            System.out.println("table:"+tableName);
                 dataRow.createOrReplaceTempView(tableName);
 
         });
@@ -349,13 +344,21 @@ public class SparkUtil {
         streamingQuery = SparkUtil.tableOutput(spark, targetTable, queryResult, preDealSinkMap);
     }
 
-    public static SparkSession getSparkSession(){
-        //SparkSession spark =
+    public static SparkSession getSparkSession() throws Exception {
+
+        SqlParser.parseSql(getDataNode(getZkclient(),"/sqlstream/sql"));
+        SqlTree sqlTree = SqlParser.sqlTree;
+        SparkConf sparkConf = new SparkConf();
+        //spark env配置加上
+        Map<String, Object> preDealSparkEnvMap = sqlTree.getPreDealSparkEnvMap();
+
+        preDealSparkEnvMap.forEach((key,value)->{
+            sparkConf.set(key,value.toString());
+        });
         spark = SparkSession
                 .builder()
-                .config("spark.default.parallelism", "2")
-                .config("spark.sql.shuffle.partitions", "2")
-                .appName("SparkInSql")
+                .config(sparkConf)
+                .appName(sqlTree.getAppInfo())
                 .master("local[2]")
                 .getOrCreate();;
         return spark;
